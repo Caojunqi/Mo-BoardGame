@@ -1,0 +1,7 @@
+/*/target/
+/*/logs/
+/logs/
+/.idea/
+*.iml
+*.class
+*.log
