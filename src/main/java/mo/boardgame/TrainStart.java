@@ -7,4 +7,9 @@ package mo.boardgame;
  * @date 2021-11-23 11:31
  */
 public class TrainStart {
+
+    public static void main(String[] args) {
+
+    }
+
 }
