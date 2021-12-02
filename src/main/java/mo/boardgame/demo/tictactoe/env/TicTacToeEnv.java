@@ -3,7 +3,7 @@ package mo.boardgame.demo.tictactoe.env;
 import common.Tuple;
 import env.action.core.impl.DiscreteAction;
 import env.action.space.impl.DiscreteActionSpace;
-import env.common.Environment;
+import mo.boardgame.game.BaseBoardGameEnv;
 import org.apache.commons.lang3.Validate;
 import utils.datatype.Snapshot;
 
@@ -16,7 +16,11 @@ import java.util.List;
  * @author Caojunqi
  * @date 2021-11-25 11:23
  */
-public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
+public class TicTacToeEnv extends BaseBoardGameEnv<TicTacToeState, DiscreteAction> {
+    /**
+     * 游戏名称
+     */
+    private static final String GAME_NAME = "tictactoe";
     /**
      * 棋盘长宽
      */
@@ -34,10 +38,7 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
      * 当前棋盘现状
      */
     private List<Token> board;
-    /**
-     * 当前行动玩家索引
-     */
-    private int curPlayerId;
+
     /**
      * 当前已走步数
      */
@@ -48,7 +49,7 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
     private int[] legalPositions;
 
     public TicTacToeEnv() {
-        super(new TicTacToeStateSpace(GRID_LENGTH, GRID_LENGTH), new DiscreteActionSpace(NUM_SQUARES));
+        super(GAME_NAME, new TicTacToeStateSpace(GRID_LENGTH, GRID_LENGTH), new DiscreteActionSpace(NUM_SQUARES), N_PLAYERS);
     }
 
     @Override
@@ -62,14 +63,15 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
             done = true;
             reward = -1;
         } else {
-            this.board.set(actionData, Token.getPlayerToken(this.curPlayerId));
+            this.board.set(actionData, Token.getPlayerToken(getCurPlayerId()));
             this.turns++;
             Tuple<Integer, Boolean> result = checkGameOver();
             done = result.second;
             reward = result.first;
         }
         if (!done) {
-            this.curPlayerId = (this.curPlayerId + 1) % N_PLAYERS;
+            int newPlayerId = (getCurPlayerId() + 1) % N_PLAYERS;
+            setCurPlayerId(newPlayerId);
         }
         return new Snapshot<>(getCurState(), reward, done);
     }
@@ -81,7 +83,7 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
             board.add(Token.NONE);
         }
         this.board = board;
-        this.curPlayerId = 0;
+        setCurPlayerId(0);
         this.turns = 0;
         return getCurState();
     }
@@ -106,7 +108,7 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
             Token token = this.board.get(i);
             int h = i / GRID_LENGTH;
             int w = i % GRID_LENGTH;
-            int num = this.curPlayerId == 0 ? 0 : (this.curPlayerId == token.getPlayerId() ? 1 : -1);
+            int num = getCurPlayerId() == 0 ? 0 : (getCurPlayerId() == token.getPlayerId() ? 1 : -1);
             curPositions[h][w] = num;
         }
         float[][] legalPositions = new float[GRID_LENGTH][GRID_LENGTH];
@@ -126,6 +128,7 @@ public class TicTacToeEnv extends Environment<TicTacToeState, DiscreteAction> {
      * @return 二元组first-收益；二元组second-是否结束
      */
     public Tuple<Integer, Boolean> checkGameOver() {
+        int curPlayerId = getCurPlayerId();
         for (int i = 0; i < GRID_LENGTH; i++) {
             // horizontals and verticals
             if ((squareIsPlayer(i * GRID_LENGTH, curPlayerId)
