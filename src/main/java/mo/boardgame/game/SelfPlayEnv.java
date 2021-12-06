@@ -46,8 +46,10 @@ public class SelfPlayEnv implements RlEnv {
      * 游戏环境
      */
     private BaseBoardGameEnv gameEnv;
+    private int batchSize;
     private int replayBufferSize;
     private ReplayBuffer replayBuffer;
+    private int curBufferSize;
     /**
      * 当前AI主角，使用的是正在优化的模型，其对手使用的是上一次优化完成的模型
      */
@@ -61,10 +63,6 @@ public class SelfPlayEnv implements RlEnv {
      */
     private RlAgent[] agents;
     /**
-     * AI主角模型训练器
-     */
-    private Trainer trainer;
-    /**
      * 当前训练好的最佳模型 <模型名称, 模型参数信息>
      */
     private Tuple<String, Model> bestModelInfo;
@@ -73,8 +71,9 @@ public class SelfPlayEnv implements RlEnv {
         this.manager = manager;
         this.random = random;
         this.gameEnv = gameEnv;
+        this.batchSize = batchSize;
         this.replayBufferSize = replayBufferSize;
-        this.replayBuffer = new FixedBuffer(batchSize, replayBufferSize);
+        resetBuffer();
 
         Model model = gameEnv.buildBaseModel();
         TrainingConfig config = buildDynamicTrainingConfig();
@@ -82,7 +81,6 @@ public class SelfPlayEnv implements RlEnv {
         trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
         trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
         this.aiAgent = new PPO(manager, random, trainer);
-        this.trainer = trainer;
 
         loadBestModel();
     }
@@ -117,7 +115,13 @@ public class SelfPlayEnv implements RlEnv {
                 step = opponentStep;
             }
         }
-        return new SelfPlayEnvStep(manager, step, agentPlayerId, action);
+
+        RlEnv.Step selfPlayStep = new SelfPlayEnvStep(manager.newSubManager(), step, agentPlayerId, action);
+        if (training) {
+            replayBuffer.addStep(selfPlayStep);
+            this.curBufferSize++;
+        }
+        return selfPlayStep;
     }
 
     @Override
@@ -132,14 +136,15 @@ public class SelfPlayEnv implements RlEnv {
 
     public void train() {
         int episode = 0;
-        int size = 0;
+        float episodeReward = 0;
+        resetBuffer();
         // 收集样本数据
-        while (size < replayBufferSize) {
+        while (this.curBufferSize < replayBufferSize) {
             episode++;
             float result = runEnvironment(this.aiAgent, true);
-            size += (int) result;
-            System.out.println("[" + episode + "]train:" + result);
+            episodeReward += result;
         }
+        System.out.println("train: episode[" + episode + "], episodeReward[" + episodeReward + "], avgReward[" + episodeReward / episode + "]");
         // 训练模型
         this.aiAgent.trainBatch(getBatch());
         // 检验模型训练结果
@@ -198,9 +203,6 @@ public class SelfPlayEnv implements RlEnv {
             trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
             PPO agent = new PPO(manager, random, trainer);
             this.agents[i] = agent;
-            if (i == agentPlayerId) {
-                this.trainer = trainer;
-            }
         }
     }
 
@@ -212,6 +214,9 @@ public class SelfPlayEnv implements RlEnv {
             step = this.gameEnv.step(action, true);
             logger.info("Rewards: " + step.getReward());
             logger.info("Done: " + step.isDone());
+            if (step.isDone()) {
+                break;
+            }
         }
         return step;
     }
@@ -237,6 +242,11 @@ public class SelfPlayEnv implements RlEnv {
                 .addTrainingListeners(new ModelTrainingListener(this, 10, 10, 0.2f))
                 .optOptimizer(
                         Adam.builder().optLearningRateTracker(Tracker.fixed(CommonParameter.LEARNING_RATE)).build());
+    }
+
+    private void resetBuffer() {
+        this.curBufferSize = 0;
+        this.replayBuffer = new FixedBuffer(batchSize, replayBufferSize);
     }
 
     public BaseBoardGameEnv getGameEnv() {

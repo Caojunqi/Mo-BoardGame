@@ -104,7 +104,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         Validate.isTrue(actionData < this.board.size());
         boolean done;
         float[] reward;
-        if (this.board.get(actionData).playerId != 0) {
+        if (this.board.get(actionData) != Token.NONE) {
             // not empty
             done = true;
             reward = new float[]{1, 1};
@@ -122,7 +122,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
             setCurPlayerId(newPlayerId);
         }
         this.done = done;
-        return new TicTacToeStep(manager, this.actionSpace, preState, buildObservation(), action, reward, done);
+        return new TicTacToeStep(manager.newSubManager(), this.actionSpace, preState, buildObservation(), action, reward, done);
     }
 
     @Override
@@ -176,7 +176,9 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
                 legalPositions[h][w] = 0;
             }
         }
-        return new NDList(manager.create(curPositions), manager.create(legalPositions));
+        NDArray curPositionArr = manager.create(curPositions).expandDims(0);
+        NDArray legalPositionArr = manager.create(legalPositions).expandDims(0);
+        return new NDList(curPositionArr.concat(legalPositionArr, 0));
     }
 
     /**
@@ -244,15 +246,15 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         /**
          * 无人落子
          */
-        NONE(".", 0),
+        NONE(".", -1),
         /**
          * 玩家1落子
          */
-        X("X", 1),
+        X("X", 0),
         /**
          * 玩家2落子
          */
-        O("O", 2),
+        O("O", 1),
         ;
 
         public static final Token[] VALUES = Token.values();
