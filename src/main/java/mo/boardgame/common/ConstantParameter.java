@@ -12,7 +12,7 @@ public final class ConstantParameter {
 
     public static final String BASE_MODEL_NAME = "base";
 
-    public static final String BEST_MODEL_PREFIX = "best_";
+    public static final String BEST_MODEL_PREFIX = "best";
 
     public static final String MODEL_SUFFIX = "model";
 

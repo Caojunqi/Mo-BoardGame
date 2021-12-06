@@ -27,6 +27,7 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
     private int curPlayerId;
 
     public BaseBoardGameEnv(String name, int playerNum) {
+        this.name = name;
         this.playerNum = playerNum;
     }
 

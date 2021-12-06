@@ -147,7 +147,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
 
     @Override
     public Model buildBaseModel() {
-        Model policyModel = Model.newInstance("tictactoe-model");
+        Model policyModel = Model.newInstance(getName());
         TicTacToePolicyBlock policyNet = new TicTacToePolicyBlock(manager, random, getActionSpace().size());
         policyModel.setBlock(policyNet);
         return policyModel;

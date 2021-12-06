@@ -35,10 +35,6 @@ public class ModelTrainingListener extends TrainingListenerAdapter {
      * 阈值，在self-play环境中，对手的能力是不断提升的，所以只要新模型的reward超过阈值，就表明，新模型优于对手。
      */
     private float threshold;
-    /**
-     * 模型代数
-     */
-    private int generation;
 
     public ModelTrainingListener(SelfPlayEnv selfPlayEnv, int evalFreq, int evalEpisodes, float threshold) {
         this.evalFreq = evalFreq;
@@ -65,24 +61,19 @@ public class ModelTrainingListener extends TrainingListenerAdapter {
         if (meanEvalReward <= this.threshold) {
             return;
         }
-        this.generation++;
         try {
-            trainer.getModel().save(buildBestModelPath(), null);
+            trainer.getModel().save(buildBestModelPath(), ConstantParameter.BEST_MODEL_PREFIX);
         } catch (IOException e) {
-            throw new IllegalStateException("Best Model Save Error!!");
+            throw new IllegalStateException("Best Model Save Error!!" + e);
         }
     }
 
     private Path buildBestModelPath() {
         String gameName = this.selfPlayEnv.getGameEnv().getName();
-        String modelFullDir = ConstantParameter.MODEL_DIR +
+        String fullDir = ConstantParameter.MODEL_DIR +
                 gameName +
-                ConstantParameter.DIR_SEPARATOR +
-                ConstantParameter.BEST_MODEL_PREFIX +
-                this.generation +
-                ConstantParameter.MODEL_FILE_EXTENSION_SPLIT +
-                ConstantParameter.MODEL_SUFFIX;
-        File modelFile = new File(modelFullDir);
+                ConstantParameter.DIR_SEPARATOR;
+        File modelFile = new File(fullDir);
         return modelFile.toPath();
     }
 }

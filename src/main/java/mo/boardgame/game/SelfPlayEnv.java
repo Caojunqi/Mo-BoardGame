@@ -8,14 +8,12 @@ import ai.djl.modality.rl.env.RlEnv;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
-import ai.djl.repository.zoo.Criteria;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.Trainer;
 import ai.djl.training.TrainingConfig;
 import ai.djl.training.loss.Loss;
 import ai.djl.training.optimizer.Adam;
 import ai.djl.training.tracker.Tracker;
-import ai.djl.translate.NoopTranslator;
 import ai.djl.util.RandomUtils;
 import algorithm.CommonParameter;
 import algorithm.ppo2.FixedBuffer;
@@ -157,8 +155,8 @@ public class SelfPlayEnv implements RlEnv {
     }
 
     private void loadBestModel() {
-        File modelDir = new File(ConstantParameter.MODEL_DIR);
-        Collection<File> modelFiles = FileUtils.listFiles(modelDir, new String[]{ConstantParameter.MODEL_SUFFIX}, true);
+        File modelDir = new File(ConstantParameter.MODEL_DIR + this.gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
+        Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
         if (modelFiles.isEmpty()) {
             if (this.bestModelInfo == null) {
                 Model baseModel = gameEnv.buildBaseModel();
@@ -174,13 +172,9 @@ public class SelfPlayEnv implements RlEnv {
             return;
         }
         try {
-            Criteria<NDList, NDList> criteria = Criteria.builder()
-                    .setTypes(NDList.class, NDList.class)
-                    .optTranslator(new NoopTranslator())
-                    .optModelPath(bestModelFile.toPath())
-                    .optModelName(bestModelName)
-                    .build();
-            Model bestModel = criteria.loadModel();
+            File bestModelFileDir = new File(ConstantParameter.MODEL_DIR + this.gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
+            Model bestModel = gameEnv.buildBaseModel();
+            bestModel.load(bestModelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, null);
             this.bestModelInfo = new Tuple<>(bestModelName, bestModel);
         } catch (Exception e) {
             throw new RuntimeException(e);
