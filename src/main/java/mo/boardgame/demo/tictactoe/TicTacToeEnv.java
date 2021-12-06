@@ -2,13 +2,11 @@ package mo.boardgame.demo.tictactoe;
 
 import ai.djl.Model;
 import ai.djl.modality.rl.ActionSpace;
-import ai.djl.modality.rl.ReplayBuffer;
 import ai.djl.modality.rl.env.RlEnv;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
-import algorithm.ppo2.FixedBuffer;
 import common.Tuple;
 import mo.boardgame.game.BaseBoardGameEnv;
 import org.apache.commons.lang3.Validate;
@@ -57,20 +55,14 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      */
     private int turns;
     /**
-     * 当前合法的落子位置
-     */
-    private int[] legalPositions;
-    private ReplayBuffer replayBuffer;
-    /**
      * 游戏是否结束
      */
     private boolean done;
 
-    public TicTacToeEnv(NDManager manager, Random random, int batchSize, int replayBufferSize) {
+    public TicTacToeEnv(NDManager manager, Random random) {
         super(GAME_NAME, N_PLAYERS);
         this.manager = manager;
         this.random = random;
-        this.replayBuffer = new FixedBuffer(batchSize, replayBufferSize);
         this.actionSpace = buildActionSpace();
         reset();
     }
@@ -127,7 +119,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
 
     @Override
     public Step[] getBatch() {
-        return replayBuffer.getBatch();
+        throw new IllegalStateException("BoardGameEnv does not provide any sample batch!!");
     }
 
     @Override
@@ -308,9 +300,13 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         private TicTacToeStep(NDManager manager, ActionSpace actionSpace, NDList preState, NDList postState, NDList action, float[] reward, boolean done) {
             this.manager = manager;
             this.actionSpace = actionSpace;
+            this.actionSpace.forEach(item -> item.attach(this.manager));
             this.preState = preState;
+            this.preState.attach(this.manager);
             this.postState = postState;
+            this.postState.attach(this.manager);
             this.action = action;
+            this.action.attach(this.manager);
             this.reward = reward;
             this.done = done;
         }

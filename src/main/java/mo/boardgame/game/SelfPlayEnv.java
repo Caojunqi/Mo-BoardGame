@@ -114,7 +114,16 @@ public class SelfPlayEnv implements RlEnv {
             }
         }
 
-        RlEnv.Step selfPlayStep = new SelfPlayEnvStep(manager.newSubManager(), step, agentPlayerId, action);
+        RlEnv.Step selfPlayStep =
+                new SelfPlayEnvStep(manager.newSubManager(),
+                        agentPlayerId,
+                        step.getPreObservation(),
+                        action,
+                        step.getPostObservation(),
+                        step.getPostActionSpace(),
+                        step.getReward(),
+                        step.isDone());
+        step.close();
         if (training) {
             replayBuffer.addStep(selfPlayStep);
             this.curBufferSize++;
@@ -239,6 +248,13 @@ public class SelfPlayEnv implements RlEnv {
     }
 
     private void resetBuffer() {
+        if (this.replayBuffer != null) {
+            for (Step step : this.replayBuffer.getBatch()) {
+                if (step != null) {
+                    step.close();
+                }
+            }
+        }
         this.curBufferSize = 0;
         this.replayBuffer = new FixedBuffer(batchSize, replayBufferSize);
     }
@@ -250,28 +266,38 @@ public class SelfPlayEnv implements RlEnv {
     static final class SelfPlayEnvStep implements RlEnv.Step {
         private NDManager manager;
         /**
-         * 当前AI主角走子后，对手会执行相应的对策，在本回合最后一位对手走子结束后，返回的游戏环境Step
-         */
-        private RlEnv.Step gameEnvStep;
-        /**
          * 当前AI主角的索引
          */
         private int agentId;
+        private NDList preObservation;
         /**
          * 当前AI主角所采取的行为
          */
         private NDList agentAction;
+        private NDList postObservation;
+        private ActionSpace actionSpace;
+        private NDArray gameEnvReward;
+        private boolean done;
 
-        private SelfPlayEnvStep(NDManager manager, RlEnv.Step gameEnvStep, int agentId, NDList agentAction) {
+        private SelfPlayEnvStep(NDManager manager, int agentId, NDList preObservation, NDList agentAction, NDList postObservation, ActionSpace actionSpace, NDArray gameEnvReward, boolean done) {
             this.manager = manager;
-            this.gameEnvStep = gameEnvStep;
             this.agentId = agentId;
+            this.preObservation = preObservation;
+            this.preObservation.attach(this.manager);
             this.agentAction = agentAction;
+            this.agentAction.attach(this.manager);
+            this.postObservation = postObservation;
+            this.postObservation.attach(this.manager);
+            this.actionSpace = actionSpace;
+            this.actionSpace.forEach(item -> item.attach(this.manager));
+            this.gameEnvReward = gameEnvReward;
+            this.gameEnvReward.attach(this.manager);
+            this.done = done;
         }
 
         @Override
         public NDList getPreObservation() {
-            return this.gameEnvStep.getPreObservation();
+            return preObservation;
         }
 
         @Override
@@ -281,23 +307,23 @@ public class SelfPlayEnv implements RlEnv {
 
         @Override
         public NDList getPostObservation() {
-            return this.gameEnvStep.getPostObservation();
+            return postObservation;
         }
 
         @Override
         public ActionSpace getPostActionSpace() {
-            return this.gameEnvStep.getPostActionSpace();
+            return actionSpace;
         }
 
         @Override
         public NDArray getReward() {
-            float[] allAgentsRewards = this.gameEnvStep.getReward().flatten().toFloatArray();
+            float[] allAgentsRewards = this.gameEnvReward.flatten().toFloatArray();
             return manager.create(allAgentsRewards[agentId]);
         }
 
         @Override
         public boolean isDone() {
-            return this.gameEnvStep.isDone();
+            return done;
         }
 
         @Override
