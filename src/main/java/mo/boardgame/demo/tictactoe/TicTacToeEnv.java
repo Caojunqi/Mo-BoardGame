@@ -28,8 +28,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
 
     private final static Logger logger = LoggerFactory.getLogger("chapters.introduction.HelloWorld1");
 
-    private NDManager manager;
-    private Random random;
     /**
      * 游戏名称
      */
@@ -46,6 +44,8 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      * 棋盘上格子数量
      */
     private static final int NUM_SQUARES = GRID_LENGTH * GRID_LENGTH;
+    private NDManager manager;
+    private Random random;
     private ActionSpace actionSpace;
     /**
      * 当前棋盘现状
@@ -60,8 +60,8 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      */
     private boolean done;
 
-    public TicTacToeEnv(NDManager manager, Random random) {
-        super(GAME_NAME, N_PLAYERS);
+    public TicTacToeEnv(NDManager manager, Random random, boolean verbose) {
+        super(GAME_NAME, N_PLAYERS, verbose);
         this.manager = manager;
         this.random = random;
         this.actionSpace = buildActionSpace();
@@ -130,6 +130,9 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
 
     @Override
     public void render() {
+        if (!isVerbose()) {
+            return;
+        }
         logger.info("");
         if (this.done) {
             logger.info("GAME OVER");

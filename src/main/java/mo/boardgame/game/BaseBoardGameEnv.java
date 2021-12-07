@@ -22,13 +22,18 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
      */
     private int playerNum;
     /**
+     * 是否绘制环境
+     */
+    private boolean verbose;
+    /**
      * 当前行动玩家索引，取值范围为[0, playerNum-1]
      */
     private int curPlayerId;
 
-    public BaseBoardGameEnv(String name, int playerNum) {
+    public BaseBoardGameEnv(String name, int playerNum, boolean verbose) {
         this.name = name;
         this.playerNum = playerNum;
+        this.verbose = verbose;
     }
 
     /**
@@ -63,6 +68,10 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
 
     public int getPlayerNum() {
         return playerNum;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
     }
 
     public int getCurPlayerId() {

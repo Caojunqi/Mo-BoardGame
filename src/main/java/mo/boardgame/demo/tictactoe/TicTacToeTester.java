@@ -16,7 +16,7 @@ public class TicTacToeTester {
     public static void main(String[] args) {
         Random random = new Random(0);
         NDManager mainManager = NDManager.newBaseManager();
-        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random);
+        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, true);
         FightRobotEnv fightRobotEnv = new FightRobotEnv(mainManager.newSubManager(), random, gameEnv);
         fightRobotEnv.run();
     }

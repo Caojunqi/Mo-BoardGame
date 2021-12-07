@@ -19,7 +19,7 @@ public class TicTacToeTrainer {
 
         Random random = new Random(0);
         NDManager mainManager = NDManager.newBaseManager();
-        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random);
+        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, false);
         SelfPlayEnv selfPlayEnv = new SelfPlayEnv(mainManager.newSubManager(), random, gameEnv, replayBufferSize, replayBufferSize);
         for (int i = 0; i < epoch; i++) {
             selfPlayEnv.train();
