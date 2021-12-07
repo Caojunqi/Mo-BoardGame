@@ -154,9 +154,6 @@ public class SelfPlayEnv implements RlEnv {
         System.out.println("train: episode[" + episode + "], episodeReward[" + episodeReward + "], avgReward[" + episodeReward / episode + "]");
         // 训练模型
         this.aiAgent.trainBatch(getBatch());
-        // 检验模型训练结果
-        float result = runEnvironment(this.aiAgent, false);
-        System.out.println("test:" + result);
     }
 
     public float eval() {
@@ -185,6 +182,7 @@ public class SelfPlayEnv implements RlEnv {
             Model bestModel = gameEnv.buildBaseModel();
             bestModel.load(bestModelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, null);
             this.bestModelInfo = new Tuple<>(bestModelName, bestModel);
+            System.out.println("最佳模型切换为：" + bestModelName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
