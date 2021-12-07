@@ -25,8 +25,7 @@ import java.util.Random;
  */
 public class TicTacToePolicyBlock extends AbstractBlock {
 
-
-    private NDManager mainManager;
+    private NDManager netManager;
     private Random random;
 
     private Block featureExtractorConv;
@@ -37,8 +36,8 @@ public class TicTacToePolicyBlock extends AbstractBlock {
     private Block valueHeadVDense;
     private Block valueHeadQDense;
 
-    public TicTacToePolicyBlock(NDManager mainManager, Random random, int actionDim) {
-        this.mainManager = mainManager;
+    public TicTacToePolicyBlock(NDManager netManager, Random random) {
+        this.netManager = netManager;
         this.random = random;
 
         this.featureExtractorConv = addChildBlock("feature_extractor_conv", buildFeatureExtractorConv());
@@ -69,7 +68,7 @@ public class TicTacToePolicyBlock extends AbstractBlock {
         NDArray actionProb = policy.singletonOrThrow().softmax(-1);
         NDArray actions;
         if (training) {
-            actions = ActionSampler.sampleMultinomial(mainManager, actionProb, random);
+            actions = ActionSampler.sampleMultinomial(netManager, actionProb, random);
         } else {
             actions = actionProb.argMax();
         }

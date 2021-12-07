@@ -140,7 +140,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     @Override
     public Model buildBaseModel() {
         Model policyModel = Model.newInstance(getName());
-        TicTacToePolicyBlock policyNet = new TicTacToePolicyBlock(manager, random, getActionSpace().size());
+        TicTacToePolicyBlock policyNet = new TicTacToePolicyBlock(manager.newSubManager(), random);
         policyModel.setBlock(policyNet);
         return policyModel;
     }
@@ -300,7 +300,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         private TicTacToeStep(NDManager manager, ActionSpace actionSpace, NDList preState, NDList postState, NDList action, float[] reward, boolean done) {
             this.manager = manager;
             this.actionSpace = actionSpace;
-            this.actionSpace.forEach(item -> item.attach(this.manager));
             this.preState = preState;
             this.preState.attach(this.manager);
             this.postState = postState;
