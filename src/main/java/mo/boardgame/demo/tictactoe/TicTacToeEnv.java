@@ -9,6 +9,7 @@ import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import common.Tuple;
 import mo.boardgame.game.BaseBoardGameEnv;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,6 +136,13 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         } else {
             logger.info("It is Player " + this.getCurPlayerId() + "'s turn to move");
         }
+        for (int i = 0; i < this.board.size(); i++) {
+            Token token = this.board.get(i);
+            System.out.print(token.symbol + " ");
+            if ((i + 1) % GRID_LENGTH == 0) {
+                System.out.print("\n");
+            }
+        }
     }
 
     @Override
@@ -148,6 +156,25 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     @Override
     public Shape getObservationShape(int batchSize) {
         return new Shape(batchSize, 2, 3, 3);
+    }
+
+    @Override
+    public NDList parsePlayerAction(String actionStr) {
+        if (StringUtils.isEmpty(actionStr)) {
+            System.out.println("玩家行为不得为空！正确格式为：x");
+            return null;
+        }
+        String[] strs = actionStr.split(" ");
+        if (strs.length > 1) {
+            System.out.println("玩家行为输入格式不正确！正确格式为：x");
+            return null;
+        }
+        int actionData = Integer.parseInt(strs[0]);
+        if (actionData >= NUM_SQUARES) {
+            System.out.println("玩家行为输入格式不正确！格子数不得超过" + NUM_SQUARES);
+            return null;
+        }
+        return new NDList(manager.create(actionData));
     }
 
     /**

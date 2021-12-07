@@ -52,6 +52,11 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
 
     public abstract Shape getObservationShape(int batchSize);
 
+    /**
+     * 解析玩家行为输入
+     */
+    public abstract NDList parsePlayerAction(String actionStr);
+
     public String getName() {
         return name;
     }
