@@ -187,7 +187,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
             Token token = this.board.get(i);
             int h = i / GRID_LENGTH;
             int w = i % GRID_LENGTH;
-            int num = getCurPlayerId() == 0 ? 0 : (getCurPlayerId() == token.getPlayerId() ? 1 : -1);
+            int num = token == Token.NONE ? 0 : getCurPlayerId() == token.getPlayerId() ? 1 : -1;
             curPositions[h][w] = num;
             if (token == Token.NONE) {
                 legalPositions[h][w] = 1;
