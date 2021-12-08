@@ -107,6 +107,7 @@ public class SelfPlayEnv implements RlEnv {
     @Override
     public RlEnv.Step step(NDList action, boolean training) {
         RlEnv.Step step = this.gameEnv.step(action, training);
+        NDList preObservation = step.getPreObservation();
         if (!step.isDone()) {
             RlEnv.Step opponentStep = continueGame();
             if (opponentStep != null) {
@@ -114,14 +115,15 @@ public class SelfPlayEnv implements RlEnv {
             }
         }
 
+        float[] allAgentsRewards = step.getReward().flatten().toFloatArray();
+        float reward = allAgentsRewards[agentPlayerId];
         RlEnv.Step selfPlayStep =
                 new SelfPlayEnvStep(manager.newSubManager(),
-                        agentPlayerId,
-                        step.getPreObservation(),
+                        preObservation,
                         action,
                         step.getPostObservation(),
                         step.getPostActionSpace(),
-                        step.getReward(),
+                        reward,
                         step.isDone());
         step.close();
         if (training) {
@@ -240,7 +242,7 @@ public class SelfPlayEnv implements RlEnv {
     private DefaultTrainingConfig buildDynamicTrainingConfig() {
         //TODO 参数统一存放
         return new DefaultTrainingConfig(Loss.l2Loss())
-                .addTrainingListeners(new ModelTrainingListener(this, 10, 10, 0.2f))
+                .addTrainingListeners(new ModelTrainingListener(this, 10, 50, 0.2f))
                 .optOptimizer(
                         Adam.builder().optLearningRateTracker(Tracker.fixed(CommonParameter.LEARNING_RATE)).build());
     }
@@ -263,10 +265,6 @@ public class SelfPlayEnv implements RlEnv {
 
     static final class SelfPlayEnvStep implements RlEnv.Step {
         private NDManager manager;
-        /**
-         * 当前AI主角的索引
-         */
-        private int agentId;
         private NDList preObservation;
         /**
          * 当前AI主角所采取的行为
@@ -274,12 +272,11 @@ public class SelfPlayEnv implements RlEnv {
         private NDList agentAction;
         private NDList postObservation;
         private ActionSpace actionSpace;
-        private NDArray gameEnvReward;
+        private float reward;
         private boolean done;
 
-        private SelfPlayEnvStep(NDManager manager, int agentId, NDList preObservation, NDList agentAction, NDList postObservation, ActionSpace actionSpace, NDArray gameEnvReward, boolean done) {
+        private SelfPlayEnvStep(NDManager manager, NDList preObservation, NDList agentAction, NDList postObservation, ActionSpace actionSpace, float reward, boolean done) {
             this.manager = manager;
-            this.agentId = agentId;
             this.preObservation = preObservation;
             this.preObservation.attach(this.manager);
             this.agentAction = agentAction;
@@ -287,8 +284,7 @@ public class SelfPlayEnv implements RlEnv {
             this.postObservation = postObservation;
             this.postObservation.attach(this.manager);
             this.actionSpace = actionSpace;
-            this.gameEnvReward = gameEnvReward;
-            this.gameEnvReward.attach(this.manager);
+            this.reward = reward;
             this.done = done;
         }
 
@@ -314,8 +310,7 @@ public class SelfPlayEnv implements RlEnv {
 
         @Override
         public NDArray getReward() {
-            float[] allAgentsRewards = this.gameEnvReward.flatten().toFloatArray();
-            return manager.create(allAgentsRewards[agentId]);
+            return manager.create(reward);
         }
 
         @Override
