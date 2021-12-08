@@ -63,7 +63,7 @@ public class ModelTrainingListener extends TrainingListenerAdapter {
         }
         try {
             trainer.getModel().save(buildBestModelPath(), ConstantParameter.BEST_MODEL_PREFIX);
-            System.out.print("新的模型出现！！evalReward: " + meanEvalReward);
+            System.out.println("新的模型出现！！evalReward: " + meanEvalReward);
         } catch (IOException e) {
             throw new IllegalStateException("Best Model Save Error!!" + e);
         }
