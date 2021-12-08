@@ -44,8 +44,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      * 棋盘上格子数量
      */
     private static final int NUM_SQUARES = GRID_LENGTH * GRID_LENGTH;
-    private NDManager manager;
-    private Random random;
     private ActionSpace actionSpace;
     /**
      * 当前棋盘现状
@@ -61,7 +59,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     private boolean done;
 
     public TicTacToeEnv(NDManager manager, Random random, boolean verbose) {
-        super(GAME_NAME, N_PLAYERS, verbose);
+        super(manager, random, GAME_NAME, N_PLAYERS, verbose);
         this.manager = manager;
         this.random = random;
         this.actionSpace = buildActionSpace();
@@ -116,16 +114,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         }
         this.done = done;
         return new TicTacToeStep(manager.newSubManager(), this.actionSpace, preState, buildObservation(), action, reward, done);
-    }
-
-    @Override
-    public Step[] getBatch() {
-        throw new IllegalStateException("BoardGameEnv does not provide any sample batch!!");
-    }
-
-    @Override
-    public void close() {
-        manager.close();
     }
 
     @Override
@@ -223,23 +211,23 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         int curPlayerId = getCurPlayerId();
         for (int i = 0; i < GRID_LENGTH; i++) {
             // horizontals and verticals
-            if ((squareIsPlayer(i * GRID_LENGTH, curPlayerId)
-                    && squareIsPlayer(i * GRID_LENGTH + 1, curPlayerId)
-                    && squareIsPlayer(i * GRID_LENGTH + 2, curPlayerId))
-                    || (squareIsPlayer(i, curPlayerId)
-                    && squareIsPlayer(i + GRID_LENGTH, curPlayerId)
-                    && squareIsPlayer(i + GRID_LENGTH * 2, curPlayerId))) {
+            if ((squareIsCurPlayer(i * GRID_LENGTH)
+                    && squareIsCurPlayer(i * GRID_LENGTH + 1)
+                    && squareIsCurPlayer(i * GRID_LENGTH + 2))
+                    || (squareIsCurPlayer(i)
+                    && squareIsCurPlayer(i + GRID_LENGTH)
+                    && squareIsCurPlayer(i + GRID_LENGTH * 2))) {
                 return new Tuple<>(1, true);
             }
         }
 
         // diagonals
-        if ((squareIsPlayer(0, curPlayerId)
-                && squareIsPlayer(4, curPlayerId)
-                && squareIsPlayer(8, curPlayerId))
-                || (squareIsPlayer(6, curPlayerId)
-                && squareIsPlayer(4, curPlayerId)
-                && squareIsPlayer(2, curPlayerId))) {
+        if ((squareIsCurPlayer(0)
+                && squareIsCurPlayer(4)
+                && squareIsCurPlayer(8))
+                || (squareIsCurPlayer(6)
+                && squareIsCurPlayer(4)
+                && squareIsCurPlayer(2))) {
             return new Tuple<>(1, true);
         }
 
@@ -250,16 +238,14 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     }
 
     /**
-     * 判断棋盘上指定位置是否由指定玩家落子
+     * 判断棋盘上指定位置是否为当前玩家落子
      *
-     * @param square   棋盘位置索引
-     * @param playerId 玩家索引
-     * @return true-square上是playerId的落子；false-square上不是playerId的落子。
+     * @param square 棋盘位置索引
+     * @return true-square上是当前玩家的落子；false-square上不是当前玩家的落子。
      */
-    private boolean squareIsPlayer(int square, int playerId) {
-        return this.board.get(square).playerId == playerId;
+    private boolean squareIsCurPlayer(int square) {
+        return this.board.get(square).playerId == getCurPlayerId();
     }
-
 
     /**
      * 井字棋棋盘记号
