@@ -3,6 +3,7 @@
 /*/logs/
 /logs/
 /.idea/
+/src/main/resources/model/
 *.iml
 *.class
 *.log
