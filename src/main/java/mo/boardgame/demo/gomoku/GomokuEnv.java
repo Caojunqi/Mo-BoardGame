@@ -8,6 +8,7 @@ import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import common.Tuple;
+import mo.boardgame.demo.gomoku.gui.GomokuVisualizer;
 import mo.boardgame.game.BaseBoardGameEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -61,12 +62,14 @@ public class GomokuEnv extends BaseBoardGameEnv {
      * 游戏是否结束
      */
     private boolean done;
+    private GomokuVisualizer visualizer;
 
     public GomokuEnv(NDManager manager, Random random, boolean verbose) {
         super(manager, random, GAME_NAME, N_PLAYERS, verbose);
         this.manager = manager;
         this.random = random;
         this.actionSpace = buildActionSpace();
+        this.visualizer = new GomokuVisualizer(GRID_LENGTH);
         reset();
     }
 
