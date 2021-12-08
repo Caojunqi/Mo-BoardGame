@@ -26,7 +26,7 @@ import java.util.Random;
  */
 public class TicTacToeEnv extends BaseBoardGameEnv {
 
-    private final static Logger logger = LoggerFactory.getLogger("chapters.introduction.HelloWorld1");
+    private final static Logger logger = LoggerFactory.getLogger(TicTacToeEnv.class);
 
     /**
      * 游戏名称
