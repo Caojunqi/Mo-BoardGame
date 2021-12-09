@@ -57,12 +57,17 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      * 游戏是否结束
      */
     private boolean done;
+    /**
+     * 用于构建环境状态的管理器，可避免内存泄漏
+     */
+    private NDManager observationManager;
 
     public TicTacToeEnv(NDManager manager, Random random, boolean verbose) {
         super(manager, random, GAME_NAME, N_PLAYERS, verbose);
         this.manager = manager;
         this.random = random;
         this.actionSpace = buildActionSpace();
+        this.observationManager = this.manager.newSubManager();
         reset();
     }
 
@@ -76,6 +81,8 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
         setCurPlayerId(0);
         this.turns = 0;
         this.done = false;
+        this.observationManager.close();
+        this.observationManager = this.manager.newSubManager();
     }
 
     @Override
@@ -186,8 +193,8 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
                 legalPositions[h][w] = 0;
             }
         }
-        NDArray curPositionArr = manager.create(curPositions).expandDims(0);
-        NDArray legalPositionArr = manager.create(legalPositions).expandDims(0);
+        NDArray curPositionArr = this.observationManager.create(curPositions).expandDims(0);
+        NDArray legalPositionArr = this.observationManager.create(legalPositions).expandDims(0);
         return new NDList(curPositionArr.concat(legalPositionArr, 0));
     }
 
