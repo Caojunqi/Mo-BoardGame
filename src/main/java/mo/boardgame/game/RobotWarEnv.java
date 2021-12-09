@@ -45,14 +45,16 @@ public class RobotWarEnv {
      * 机器人智能体
      */
     private RlAgent[] agents;
+    private String[] modelEpochs;
 
-    public RobotWarEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv, String[] agentModels) {
+    public RobotWarEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv, String[] modelEpochs) {
         this.manager = manager;
         this.random = random;
         this.gameEnv = gameEnv;
         this.agents = new RlAgent[this.gameEnv.getPlayerNum()];
+        this.modelEpochs = modelEpochs;
 
-        buildAgents(agentModels);
+        buildAgents();
     }
 
     public void run() {
@@ -83,15 +85,13 @@ public class RobotWarEnv {
 
     /**
      * 构建机器人智能体
-     *
-     * @param agentModels 所用的模型文件名称
      */
-    private void buildAgents(String[] agentModels) {
-        if (agentModels == null || agentModels.length != this.gameEnv.getPlayerNum()) {
+    private void buildAgents() {
+        if (this.modelEpochs == null || this.modelEpochs.length != this.gameEnv.getPlayerNum()) {
             throw new IllegalArgumentException("智能体模型数量不对，需要[" + this.gameEnv.getPlayerNum() + "]个模型！！");
         }
 
-        for (int i = 0; i < agentModels.length; i++) {
+        for (int i = 0; i < this.modelEpochs.length; i++) {
             String fullName = ConstantParameter.MODEL_DIR +
                     this.gameEnv.getName() +
                     ConstantParameter.DIR_SEPARATOR;
@@ -99,7 +99,7 @@ public class RobotWarEnv {
             Model model = gameEnv.buildBaseModel();
             try {
                 Map<String, String> options = new HashMap<>(1);
-                options.put("epoch", agentModels[i]);
+                options.put("epoch", this.modelEpochs[i]);
                 model.load(file.toPath(), ConstantParameter.BEST_MODEL_PREFIX, options);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -116,8 +116,11 @@ public class RobotWarEnv {
 
     private String output(float[] warResult) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (float reward : warResult) {
-            stringBuilder.append(reward);
+        for (int i = 0; i < warResult.length; i++) {
+            stringBuilder.append(this.modelEpochs[i]);
+            stringBuilder.append("[");
+            stringBuilder.append(warResult[i]);
+            stringBuilder.append("]");
             stringBuilder.append(",");
         }
         return stringBuilder.toString();
