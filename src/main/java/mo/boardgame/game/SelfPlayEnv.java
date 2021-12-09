@@ -89,8 +89,6 @@ public class SelfPlayEnv implements RlEnv {
         trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
         trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
         this.aiAgent = new PPO(manager.newSubManager(), random, trainer);
-
-        loadOpponentModelInfo();
     }
 
     @Override
