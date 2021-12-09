@@ -17,7 +17,7 @@ public class TicTacToeRobotWarTester {
         Random random = new Random(0);
         NDManager mainManager = NDManager.newBaseManager();
         TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, true);
-        String[] modelFiles = new String[]{"0117", "0115"};
+        String[] modelFiles = new String[]{"0131", "0130"};
         RobotWarEnv robotWarEnv = new RobotWarEnv(mainManager.newSubManager(), random, gameEnv, modelFiles);
         robotWarEnv.run();
     }

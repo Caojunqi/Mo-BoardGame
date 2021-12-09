@@ -1,6 +1,7 @@
 package mo.boardgame.demo.gomoku;
 
 import ai.djl.ndarray.NDManager;
+import mo.boardgame.game.OpponentType;
 import mo.boardgame.game.SelfPlayEnv;
 
 import java.util.Random;
@@ -18,7 +19,7 @@ public class GomokuTrainer {
         Random random = new Random(0);
         NDManager mainManager = NDManager.newBaseManager();
         GomokuEnv gameEnv = new GomokuEnv(mainManager.newSubManager(), random, false);
-        SelfPlayEnv selfPlayEnv = new SelfPlayEnv(mainManager.newSubManager(), random, gameEnv, replayBufferSize, replayBufferSize);
+        SelfPlayEnv selfPlayEnv = new SelfPlayEnv(mainManager.newSubManager(), random, gameEnv, replayBufferSize, replayBufferSize, OpponentType.MOSTLY_BEST);
         for (int i = 0; i < epoch; i++) {
             selfPlayEnv.train();
         }

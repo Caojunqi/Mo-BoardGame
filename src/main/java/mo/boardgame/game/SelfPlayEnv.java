@@ -20,13 +20,10 @@ import algorithm.ppo2.FixedBuffer;
 import algorithm.ppo2.PPO;
 import common.Tuple;
 import mo.boardgame.common.ConstantParameter;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.*;
+import java.util.Random;
 
 /**
  * “左右互搏”环境
@@ -46,7 +43,14 @@ public class SelfPlayEnv implements RlEnv {
     private BaseBoardGameEnv gameEnv;
     private int batchSize;
     private int replayBufferSize;
+    /**
+     * 样本容器
+     */
     private ReplayBuffer replayBuffer;
+    /**
+     * 对手类型
+     */
+    private OpponentType opponentType;
     private int curBufferSize;
     /**
      * 当前AI主角，使用的是正在优化的模型，其对手使用的是上一次优化完成的模型
@@ -61,16 +65,22 @@ public class SelfPlayEnv implements RlEnv {
      */
     private RlAgent[] agents;
     /**
-     * 当前训练好的最佳模型 <模型名称, 模型参数信息>
+     * 对手所用的模型信息 <模型名称, 模型参数信息>
      */
-    private Tuple<String, Model> bestModelInfo;
+    private Tuple<String, Model> opponentModelInfo;
 
-    public SelfPlayEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv, int batchSize, int replayBufferSize) {
+    public SelfPlayEnv(NDManager manager,
+                       Random random,
+                       BaseBoardGameEnv gameEnv,
+                       int batchSize,
+                       int replayBufferSize,
+                       OpponentType opponentType) {
         this.manager = manager;
         this.random = random;
         this.gameEnv = gameEnv;
         this.batchSize = batchSize;
         this.replayBufferSize = replayBufferSize;
+        this.opponentType = opponentType;
         resetBuffer();
 
         Model model = gameEnv.buildBaseModel();
@@ -80,7 +90,7 @@ public class SelfPlayEnv implements RlEnv {
         trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
         this.aiAgent = new PPO(manager.newSubManager(), random, trainer);
 
-        loadBestModel();
+        loadOpponentModelInfo();
     }
 
     @Override
@@ -162,44 +172,28 @@ public class SelfPlayEnv implements RlEnv {
         return runEnvironment(aiAgent, false);
     }
 
-    private void loadBestModel() {
-        File modelDir = new File(ConstantParameter.MODEL_DIR + this.gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
-        Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
-        if (modelFiles.isEmpty()) {
-            if (this.bestModelInfo == null) {
-                Model baseModel = gameEnv.buildBaseModel();
-                this.bestModelInfo = new Tuple<>(ConstantParameter.BASE_MODEL_NAME, baseModel);
-            }
-            return;
+    /**
+     * 加载对手所用模型信息
+     */
+    private void loadOpponentModelInfo() {
+        Tuple<String, Model> newOpponentModelInfo = this.opponentType.buildModel(this.gameEnv, this.opponentModelInfo);
+        if (newOpponentModelInfo == null) {
+            Model baseModel = gameEnv.buildBaseModel();
+            newOpponentModelInfo = new Tuple<>(ConstantParameter.BASE_MODEL_NAME, baseModel);
         }
-        List<File> sortedFiles = new ArrayList<>(modelFiles);
-        sortedFiles.sort(Comparator.comparing(File::getName));
-        File bestModelFile = sortedFiles.get(sortedFiles.size() - 1);
-        String bestModelName = FilenameUtils.removeExtension(bestModelFile.getName());
-        if (this.bestModelInfo != null && this.bestModelInfo.first.equals(bestModelName)) {
-            return;
-        }
-        try {
-            File bestModelFileDir = new File(ConstantParameter.MODEL_DIR + this.gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
-            Model bestModel = gameEnv.buildBaseModel();
-            bestModel.load(bestModelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, null);
-            this.bestModelInfo = new Tuple<>(bestModelName, bestModel);
-            System.out.println("最佳模型切换为：" + bestModelName);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        this.opponentModelInfo = newOpponentModelInfo;
     }
 
     /**
      * 构建对手
      */
     private void setupOpponents() {
-        loadBestModel();
+        loadOpponentModelInfo();
         for (int i = 0; i < this.gameEnv.getPlayerNum(); i++) {
             if (i == agentPlayerId) {
                 continue;
             }
-            Model model = this.bestModelInfo.second;
+            Model model = this.opponentModelInfo.second;
             TrainingConfig config = buildStaticTrainingConfig();
             Trainer trainer = model.newTrainer(config);
             trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
@@ -242,7 +236,7 @@ public class SelfPlayEnv implements RlEnv {
     private DefaultTrainingConfig buildDynamicTrainingConfig() {
         //TODO 参数统一存放
         return new DefaultTrainingConfig(Loss.l2Loss())
-                .addTrainingListeners(new ModelTrainingListener(this, 10, 50, 0.2f))
+                .addTrainingListeners(new ModelTrainingListener(this, 10, 50, 0.6f))
                 .optOptimizer(
                         Adam.builder().optLearningRateTracker(Tracker.fixed(CommonParameter.LEARNING_RATE)).build());
     }

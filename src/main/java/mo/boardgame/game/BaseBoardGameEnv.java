@@ -79,6 +79,10 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
         manager.close();
     }
 
+    public Random getRandom() {
+        return random;
+    }
+
     public String getName() {
         return name;
     }
