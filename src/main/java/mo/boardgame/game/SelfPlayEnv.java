@@ -16,6 +16,7 @@ import ai.djl.training.optimizer.Adam;
 import ai.djl.training.tracker.Tracker;
 import ai.djl.util.RandomUtils;
 import algorithm.CommonParameter;
+import algorithm.RlAgentCloseable;
 import algorithm.ppo2.FixedBuffer;
 import algorithm.ppo2.PPO;
 import common.Tuple;
@@ -63,7 +64,7 @@ public class SelfPlayEnv implements RlEnv {
     /**
      * 所有参与游戏的AI主体，处于{@link SelfPlayEnv#agentPlayerId}位置的Agent为null。
      */
-    private RlAgent[] agents;
+    private RlAgentCloseable[] agents;
     /**
      * 对手所用的模型信息 <模型名称, 模型参数信息>
      */
@@ -94,7 +95,7 @@ public class SelfPlayEnv implements RlEnv {
     @Override
     public void reset() {
         gameEnv.reset();
-        this.agents = new RlAgent[gameEnv.getPlayerNum()];
+        this.agents = new RlAgentCloseable[gameEnv.getPlayerNum()];
         this.agentPlayerId = RandomUtils.nextInt(gameEnv.getPlayerNum());
         setupOpponents();
         if (this.agentPlayerId != gameEnv.getCurPlayerId()) {
@@ -197,7 +198,11 @@ public class SelfPlayEnv implements RlEnv {
             trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
             trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
             PPO agent = new PPO(manager.newSubManager(), random, trainer);
+            RlAgentCloseable oldAgent = this.agents[i];
             this.agents[i] = agent;
+            if (oldAgent != null) {
+                oldAgent.close();
+            }
         }
     }
 
