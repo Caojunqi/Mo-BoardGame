@@ -90,7 +90,7 @@ public enum OpponentType {
                 }
                 options.put("epoch", m.group(1));
                 model.load(modelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, options);
-                System.out.println("对手模型切换为：" + modelName);
+//                System.out.println("对手模型切换为：" + modelName);
                 return new Tuple<>(modelName, model);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -126,7 +126,7 @@ public enum OpponentType {
                 }
                 options.put("epoch", m.group(1));
                 model.load(modelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, options);
-                System.out.println("对手模型切换为：" + randomModelName);
+//                System.out.println("对手模型切换为：" + randomModelName);
                 return new Tuple<>(randomModelName, model);
             } catch (Exception e) {
                 throw new RuntimeException(e);
