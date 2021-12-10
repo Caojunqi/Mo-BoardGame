@@ -159,8 +159,8 @@ public class GomokuEnv extends BaseBoardGameEnv {
     }
 
     @Override
-    public Shape getObservationShape(int batchSize) {
-        return new Shape(batchSize, 2, GRID_LENGTH, GRID_LENGTH);
+    public Shape getObservationShape() {
+        return new Shape(1, 2, GRID_LENGTH, GRID_LENGTH);
     }
 
     @Override

@@ -62,7 +62,7 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
      */
     public abstract Model buildBaseModel();
 
-    public abstract Shape getObservationShape(int batchSize);
+    public abstract Shape getObservationShape();
 
     /**
      * 解析玩家行为输入

@@ -87,7 +87,7 @@ public class SelfPlayEnv implements RlEnv {
         Model model = gameEnv.buildBaseModel();
         TrainingConfig config = buildDynamicTrainingConfig();
         Trainer trainer = model.newTrainer(config);
-        trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
+        trainer.initialize(gameEnv.getObservationShape());
         trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
         this.aiAgent = new PPO(manager.newSubManager(), random, trainer);
     }
@@ -206,7 +206,7 @@ public class SelfPlayEnv implements RlEnv {
             Model model = this.opponentModelInfo.second;
             TrainingConfig config = buildStaticTrainingConfig();
             Trainer trainer = model.newTrainer(config);
-            trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
+            trainer.initialize(gameEnv.getObservationShape());
             trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
             PPO agent = new PPO(manager.newSubManager(), random, trainer);
             this.agents[i] = agent;

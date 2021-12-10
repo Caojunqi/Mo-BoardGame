@@ -9,7 +9,6 @@ import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.Trainer;
 import ai.djl.training.TrainingConfig;
 import ai.djl.training.loss.Loss;
-import algorithm.CommonParameter;
 import algorithm.ppo2.PPO;
 import mo.boardgame.common.ConstantParameter;
 import org.apache.commons.io.FileUtils;
@@ -99,7 +98,7 @@ public class FightRobotEnv {
             }
             TrainingConfig config = new DefaultTrainingConfig(Loss.l2Loss());
             Trainer trainer = opponentModel.newTrainer(config);
-            trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
+            trainer.initialize(gameEnv.getObservationShape());
             trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
             PPO agent = new PPO(manager.newSubManager(), random, trainer);
             this.agents[i] = agent;
