@@ -95,6 +95,13 @@ public class SelfPlayEnv implements RlEnv {
     @Override
     public void reset() {
         gameEnv.reset();
+        if (this.agents != null) {
+            for (RlAgentCloseable agent : this.agents) {
+                if (agent != null) {
+                    agent.close();
+                }
+            }
+        }
         this.agents = new RlAgentCloseable[gameEnv.getPlayerNum()];
         this.agentPlayerId = RandomUtils.nextInt(gameEnv.getPlayerNum());
         setupOpponents();
@@ -198,11 +205,7 @@ public class SelfPlayEnv implements RlEnv {
             trainer.initialize(gameEnv.getObservationShape(CommonParameter.INNER_BATCH_SIZE));
             trainer.notifyListeners(listener -> listener.onTrainingBegin(trainer));
             PPO agent = new PPO(manager.newSubManager(), random, trainer);
-            RlAgentCloseable oldAgent = this.agents[i];
             this.agents[i] = agent;
-            if (oldAgent != null) {
-                oldAgent.close();
-            }
         }
     }
 
