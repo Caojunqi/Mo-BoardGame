@@ -187,6 +187,10 @@ public class SelfPlayEnv implements RlEnv {
             Model baseModel = gameEnv.buildBaseModel();
             newOpponentModelInfo = new Tuple<>(ConstantParameter.BASE_MODEL_NAME, baseModel);
         }
+        if (this.opponentModelInfo != null && !this.opponentModelInfo.first.equals(newOpponentModelInfo.first)) {
+            // 清除旧Model的资源占用
+            this.opponentModelInfo.second.close();
+        }
         this.opponentModelInfo = newOpponentModelInfo;
     }
 
