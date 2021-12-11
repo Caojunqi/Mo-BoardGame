@@ -98,6 +98,45 @@ public enum OpponentType {
         }
     },
     /**
+     * 按照排名，来概率性地选择对手，模型越优秀，被选中为对手的概率就越高
+     */
+    RANK {
+        @Override
+        public Tuple<String, Model> buildModel(BaseBoardGameEnv gameEnv, Tuple<String, Model> oldModelInfo) {
+            File modelDir = new File(ConstantParameter.MODEL_DIR + gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
+            Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
+            if (modelFiles.isEmpty()) {
+                return null;
+            }
+            List<File> sortedFiles = new ArrayList<>(modelFiles);
+            sortedFiles.sort(Comparator.comparing(File::getName));
+            int rankRandomIndex = MathUtils.rankRandomIndex(gameEnv.getRandom(), sortedFiles.size());
+
+            File modelFile = sortedFiles.get(rankRandomIndex);
+            String modelName = FilenameUtils.removeExtension(modelFile.getName());
+            if (oldModelInfo != null && oldModelInfo.first.equals(modelName)) {
+                // 模型没有变
+                return oldModelInfo;
+            }
+            try {
+                File modelFileDir = new File(ConstantParameter.MODEL_DIR + gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
+                Model model = gameEnv.buildBaseModel();
+                Map<String, String> options = new HashMap<>(1);
+                final Pattern pattern = java.util.regex.Pattern.compile(Pattern.quote(ConstantParameter.BEST_MODEL_PREFIX) + "-(\\d{4})");
+                Matcher m = pattern.matcher(modelName);
+                if (!m.matches()) {
+                    return null;
+                }
+                options.put("epoch", m.group(1));
+                model.load(modelFileDir.toPath(), ConstantParameter.BEST_MODEL_PREFIX, options);
+//                System.out.println("对手模型切换为：" + randomModelName);
+                return new Tuple<>(modelName, model);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    },
+    /**
      * 从当前训练好的模型中随机选择
      */
     RANDOM {
