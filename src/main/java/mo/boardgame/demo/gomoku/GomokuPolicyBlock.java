@@ -83,7 +83,6 @@ public class GomokuPolicyBlock extends AbstractBlock {
 
     @Override
     public void initializeChildBlocks(NDManager manager, DataType dataType, Shape... inputShapes) {
-        long batchSize = inputShapes[0].get(0);
 
         this.featureExtractorConv.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.featureExtractorConv.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
@@ -91,11 +90,11 @@ public class GomokuPolicyBlock extends AbstractBlock {
 
         this.featureExtractorResidual.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.featureExtractorResidual.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
-        this.featureExtractorResidual.initialize(manager, dataType, new Shape(batchSize, 32, 10, 10));
+        this.featureExtractorResidual.initialize(manager, dataType, new Shape(1, 32, 10, 10));
 
         this.policyHeadConv.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.policyHeadConv.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
-        this.policyHeadConv.initialize(manager, dataType, new Shape(batchSize, 32, 10, 10));
+        this.policyHeadConv.initialize(manager, dataType, new Shape(1, 32, 10, 10));
 
         this.policyHeadDense.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.policyHeadDense.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
@@ -103,7 +102,7 @@ public class GomokuPolicyBlock extends AbstractBlock {
 
         this.valueHeadConv.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.valueHeadConv.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
-        this.valueHeadConv.initialize(manager, dataType, new Shape(batchSize, 32, 10, 10));
+        this.valueHeadConv.initialize(manager, dataType, new Shape(1, 32, 10, 10));
 
         this.valueHeadVDense.setInitializer(new XavierInitializer(), Parameter.Type.WEIGHT);
         this.valueHeadVDense.setInitializer(Initializer.ZEROS, Parameter.Type.BIAS);
