@@ -1,8 +1,10 @@
 package mo.boardgame.demo.gomoku;
 
 import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.NDArrays;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
+import ai.djl.ndarray.index.NDIndex;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.nn.*;
@@ -49,29 +51,37 @@ public class GomokuPolicyBlock extends AbstractBlock {
 
     @Override
     protected NDList forwardInternal(ParameterStore parameterStore, NDList inputs, boolean training, PairList<String, Object> params) {
-        NDList featureConv = this.featureExtractorConv.forward(parameterStore, inputs, training);
+        NDArray obs = inputs.singletonOrThrow().get(new NDIndex(":,0,:,:")).expandDims(1);
+        NDArray mask = inputs.singletonOrThrow().get(new NDIndex(":,1,:,:")).expandDims(1).toType(DataType.BOOLEAN, false);
+
+        NDList featureConv = this.featureExtractorConv.forward(parameterStore, new NDList(obs), training);
         NDList featureResidual = this.featureExtractorResidual.forward(parameterStore, featureConv, training);
         NDArray tmp = featureConv.singletonOrThrow().add(featureResidual.singletonOrThrow());
         NDList features = Activation.relu(new NDList(tmp));
 
         NDList policyConv = this.policyHeadConv.forward(parameterStore, features, training);
         NDList policyFlatten = new NDList(policyConv.get(0).reshape(policyConv.get(0).getShape().get(0), -1));
-        NDList policy = this.policyHeadDense.forward(parameterStore, policyFlatten, training);
+        NDArray policy = this.policyHeadDense.forward(parameterStore, policyFlatten, training).singletonOrThrow();
+        // Normalize
+        policy = policy.sub(policy.exp().sum(new int[]{-1}, true).log());
 
         NDList valueConv = this.valueHeadConv.forward(parameterStore, features, training);
         NDList valueFlatten = new NDList(valueConv.get(0).reshape(valueConv.get(0).getShape().get(0), -1));
         NDList vf = this.valueHeadVDense.forward(parameterStore, valueFlatten, training);
         NDList qf = this.valueHeadQDense.forward(parameterStore, valueFlatten, training);
 
-        NDArray actionProb = policy.singletonOrThrow().softmax(-1);
+        NDArray maskFlatten = mask.reshape(mask.getShape().get(0), -1);
+        NDArray maskPolicy = NDArrays.where(maskFlatten, policy, policy.getManager().create(-1e8f));
+        maskPolicy = maskPolicy.sub(maskPolicy.exp().sum(new int[]{-1}, true).log());
+        NDArray actionProb = maskPolicy.softmax(-1);
         NDArray actions;
         if (training) {
             actions = ActionSampler.sampleMultinomial(netManager, actionProb, random);
         } else {
             actions = actionProb.argMax();
         }
-        NDArray actionLogProb = actionProb.log();
-        return new NDList(actions, vf.singletonOrThrow(), actionLogProb);
+        NDArray entropy = maskPolicy.mul(actionProb).sum(new int[]{-1}).neg();
+        return new NDList(actions, vf.singletonOrThrow(), maskPolicy, entropy);
     }
 
     @Override

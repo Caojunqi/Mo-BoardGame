@@ -160,7 +160,7 @@ public class GomokuEnv extends BaseBoardGameEnv {
 
     @Override
     public Shape getObservationShape() {
-        return new Shape(1, 2, GRID_LENGTH, GRID_LENGTH);
+        return new Shape(1, 1, GRID_LENGTH, GRID_LENGTH);
     }
 
     @Override
