@@ -246,7 +246,6 @@ public class GomokuEnv extends BaseBoardGameEnv {
                     }
                 }
                 if (finish) {
-                    testPrint(1, i, w, h, "水平检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -261,7 +260,6 @@ public class GomokuEnv extends BaseBoardGameEnv {
                     }
                 }
                 if (finish) {
-                    testPrint(1, i, w, h, "垂直检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -276,7 +274,6 @@ public class GomokuEnv extends BaseBoardGameEnv {
                     }
                 }
                 if (finish) {
-                    testPrint(1, i, w, h, "坐上向右下检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -291,38 +288,15 @@ public class GomokuEnv extends BaseBoardGameEnv {
                     }
                 }
                 if (finish) {
-                    testPrint(1, i, w, h, "右上向左下检测");
                     return new Tuple<>(1, true);
                 }
             }
         }
 
         if (this.turns == NUM_SQUARES) {
-            testPrint(0, 0, 0, 0, "平局");
             return new Tuple<>(0, true);
         }
         return new Tuple<>(0, false);
-    }
-
-    private void testPrint(int score, int index, int w, int h, String desc) {
-        System.out.println("当前玩家标记：" + Token.getPlayerToken(getCurPlayerId()));
-        System.out.println("得分：" + score);
-        System.out.println("回合：" + this.turns);
-        System.out.println("检测到的棋子位置：i-" + index + "  w-" + w + "  h-" + h);
-        System.out.println("获胜方式：" + desc);
-
-
-        for (int i = 0; i < NUM_SQUARES; i++) {
-            Token token = this.chessInfo.get(i);
-            if (token == null) {
-                token = Token.NONE;
-            }
-            System.out.print(token.symbol + " ");
-            if ((i + 1) % GRID_LENGTH == 0) {
-                System.out.print("\n");
-            }
-        }
-        System.out.println("\n");
     }
 
     /**
