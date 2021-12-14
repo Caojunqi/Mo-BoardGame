@@ -153,7 +153,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
 
     @Override
     public Shape getObservationShape() {
-        return new Shape(1, 2, 3, 3);
+        return new Shape(1, 1, 3, 3);
     }
 
     @Override
