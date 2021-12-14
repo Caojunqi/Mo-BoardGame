@@ -1,5 +1,6 @@
 package mo.boardgame.demo.gomoku;
 
+import ai.djl.engine.Engine;
 import ai.djl.ndarray.NDManager;
 import mo.boardgame.game.OpponentType;
 import mo.boardgame.game.SelfPlayEnv;
@@ -16,6 +17,7 @@ public class GomokuTrainer {
         int epoch = 500;
         int replayBufferSize = 2048;
 
+        Engine.getInstance().setRandomSeed(0);
         Random random = new Random(0);
         NDManager mainManager = NDManager.newBaseManager();
         GomokuEnv gameEnv = new GomokuEnv(mainManager.newSubManager(), random, false);

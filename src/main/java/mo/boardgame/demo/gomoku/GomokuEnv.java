@@ -15,8 +15,8 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -51,9 +51,9 @@ public class GomokuEnv extends BaseBoardGameEnv {
     private static final int NUM_SQUARES = GRID_LENGTH * GRID_LENGTH;
     private ActionSpace actionSpace;
     /**
-     * 当前棋盘现状
+     * 落子信息
      */
-    private List<Token> board;
+    private Map<Integer, Token> chessInfo;
     /**
      * 当前已走步数
      */
@@ -80,11 +80,7 @@ public class GomokuEnv extends BaseBoardGameEnv {
 
     @Override
     public void reset() {
-        List<Token> board = new ArrayList<>(NUM_SQUARES);
-        for (int i = 0; i < NUM_SQUARES; i++) {
-            board.add(Token.NONE);
-        }
-        this.board = board;
+        this.chessInfo = new HashMap<>(NUM_SQUARES);
         setCurPlayerId(0);
         this.turns = 0;
         this.done = false;
@@ -106,16 +102,16 @@ public class GomokuEnv extends BaseBoardGameEnv {
     public Step step(NDList action, boolean training) {
         NDList preState = buildObservation();
         int actionData = action.singletonOrThrow().getInt();
-        Validate.isTrue(actionData < this.board.size());
+        Validate.isTrue(actionData < NUM_SQUARES);
         boolean done;
         float[] reward;
-        if (this.board.get(actionData) != Token.NONE) {
+        if (this.chessInfo.get(actionData) != null) {
             // not empty
             done = true;
             reward = new float[]{1, 1};
             reward[getCurPlayerId()] = -1;
         } else {
-            this.board.set(actionData, Token.getPlayerToken(getCurPlayerId()));
+            this.chessInfo.put(actionData, Token.getPlayerToken(getCurPlayerId()));
             this.turns++;
             Tuple<Integer, Boolean> result = checkGameOver();
             done = result.second;
@@ -141,8 +137,11 @@ public class GomokuEnv extends BaseBoardGameEnv {
         } else {
             logger.info("It is Player " + this.getCurPlayerId() + "'s turn to move");
         }
-        for (int i = 0; i < this.board.size(); i++) {
-            Token token = this.board.get(i);
+        for (int i = 0; i < NUM_SQUARES; i++) {
+            Token token = this.chessInfo.get(i);
+            if (token == null) {
+                token = Token.NONE;
+            }
             System.out.print(token.symbol + " ");
             if ((i + 1) % GRID_LENGTH == 0) {
                 System.out.print("\n");
@@ -188,13 +187,13 @@ public class GomokuEnv extends BaseBoardGameEnv {
     private NDList buildObservation() {
         float[][] curPositions = new float[GRID_LENGTH][GRID_LENGTH];
         float[][] legalPositions = new float[GRID_LENGTH][GRID_LENGTH];
-        for (int i = 0; i < this.board.size(); i++) {
-            Token token = this.board.get(i);
+        for (int i = 0; i < NUM_SQUARES; i++) {
             int h = i / GRID_LENGTH;
             int w = i % GRID_LENGTH;
-            int num = token == Token.NONE ? 0 : getCurPlayerId() == token.getPlayerId() ? 1 : -1;
+            Token token = this.chessInfo.get(i);
+            int num = token == null ? 0 : getCurPlayerId() == token.getPlayerId() ? 1 : -1;
             curPositions[h][w] = num;
-            if (token == Token.NONE) {
+            if (token == null) {
                 legalPositions[h][w] = 1;
             } else {
                 legalPositions[h][w] = 0;
@@ -228,11 +227,9 @@ public class GomokuEnv extends BaseBoardGameEnv {
             return new Tuple<>(0, false);
         }
 
-        for (int i = 0; i < NUM_SQUARES; i++) {
-            Token token = this.board.get(i);
-            if (token == Token.NONE) {
-                continue;
-            }
+        for (Map.Entry<Integer, Token> entry : this.chessInfo.entrySet()) {
+            int i = entry.getKey();
+            Token token = entry.getValue();
             if (token.playerId != curPlayerId) {
                 continue;
             }
@@ -242,13 +239,14 @@ public class GomokuEnv extends BaseBoardGameEnv {
             // 水平检测
             if (w < GRID_LENGTH - N_IN_ROW + 1) {
                 boolean finish = true;
-                for (int j = w; j < w + N_IN_ROW; j++) {
-                    if (squareIsCurPlayer(j)) {
+                for (int j = i; j < i + N_IN_ROW; j++) {
+                    if (!squareIsCurPlayer(j)) {
                         finish = false;
                         break;
                     }
                 }
                 if (finish) {
+                    testPrint(1, i, w, h, "水平检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -256,13 +254,14 @@ public class GomokuEnv extends BaseBoardGameEnv {
             // 垂直检测
             if (h < GRID_LENGTH - N_IN_ROW + 1) {
                 boolean finish = true;
-                for (int j = h; j < h + N_IN_ROW * GRID_LENGTH; j += GRID_LENGTH) {
-                    if (squareIsCurPlayer(j)) {
+                for (int j = i; j < i + N_IN_ROW * GRID_LENGTH; j += GRID_LENGTH) {
+                    if (!squareIsCurPlayer(j)) {
                         finish = false;
                         break;
                     }
                 }
                 if (finish) {
+                    testPrint(1, i, w, h, "垂直检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -270,13 +269,14 @@ public class GomokuEnv extends BaseBoardGameEnv {
             // 左上向右下检测
             if (w < GRID_LENGTH - N_IN_ROW + 1 && h < GRID_LENGTH - N_IN_ROW + 1) {
                 boolean finish = true;
-                for (int j = w; j < w + (N_IN_ROW + 1); j += (GRID_LENGTH + 1)) {
-                    if (squareIsCurPlayer(j)) {
+                for (int j = i; j < i + N_IN_ROW * (GRID_LENGTH + 1); j += (GRID_LENGTH + 1)) {
+                    if (!squareIsCurPlayer(j)) {
                         finish = false;
                         break;
                     }
                 }
                 if (finish) {
+                    testPrint(1, i, w, h, "坐上向右下检测");
                     return new Tuple<>(1, true);
                 }
             }
@@ -284,22 +284,45 @@ public class GomokuEnv extends BaseBoardGameEnv {
             // 右上向左下检测
             if (w > N_IN_ROW - 1 && h < GRID_LENGTH - N_IN_ROW + 1) {
                 boolean finish = true;
-                for (int j = w; j < w + (N_IN_ROW - 1); j += (GRID_LENGTH - 1)) {
-                    if (squareIsCurPlayer(j)) {
+                for (int j = i; j < i + N_IN_ROW * (GRID_LENGTH - 1); j += (GRID_LENGTH - 1)) {
+                    if (!squareIsCurPlayer(j)) {
                         finish = false;
                         break;
                     }
                 }
                 if (finish) {
+                    testPrint(1, i, w, h, "右上向左下检测");
                     return new Tuple<>(1, true);
                 }
             }
         }
 
         if (this.turns == NUM_SQUARES) {
+            testPrint(0, 0, 0, 0, "平局");
             return new Tuple<>(0, true);
         }
         return new Tuple<>(0, false);
+    }
+
+    private void testPrint(int score, int index, int w, int h, String desc) {
+        System.out.println("当前玩家标记：" + Token.getPlayerToken(getCurPlayerId()));
+        System.out.println("得分：" + score);
+        System.out.println("回合：" + this.turns);
+        System.out.println("检测到的棋子位置：i-" + index + "  w-" + w + "  h-" + h);
+        System.out.println("获胜方式：" + desc);
+
+
+        for (int i = 0; i < NUM_SQUARES; i++) {
+            Token token = this.chessInfo.get(i);
+            if (token == null) {
+                token = Token.NONE;
+            }
+            System.out.print(token.symbol + " ");
+            if ((i + 1) % GRID_LENGTH == 0) {
+                System.out.print("\n");
+            }
+        }
+        System.out.println("\n");
     }
 
     /**
@@ -309,7 +332,8 @@ public class GomokuEnv extends BaseBoardGameEnv {
      * @return true-square上是当前玩家的落子；false-square上不是当前玩家的落子。
      */
     private boolean squareIsCurPlayer(int square) {
-        return this.board.get(square).playerId == getCurPlayerId();
+        Token token = this.chessInfo.get(square);
+        return token != null && token.playerId == getCurPlayerId();
     }
 
     /**
