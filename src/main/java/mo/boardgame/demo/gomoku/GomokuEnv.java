@@ -8,7 +8,7 @@ import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import common.Tuple;
-import mo.boardgame.demo.gomoku.gui.GomokuVisualizer;
+import mo.boardgame.demo.gomoku.gui.GomokuBoardPane;
 import mo.boardgame.game.BaseBoardGameEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -66,7 +66,7 @@ public class GomokuEnv extends BaseBoardGameEnv {
      * 用于构建环境状态的管理器，可避免内存泄漏
      */
     private NDManager observationManager;
-    private GomokuVisualizer visualizer;
+    private GomokuBoardPane boardPane;
 
     public GomokuEnv(NDManager manager, Random random, boolean verbose) {
         super(manager, random, GAME_NAME, N_PLAYERS, verbose);
@@ -74,7 +74,6 @@ public class GomokuEnv extends BaseBoardGameEnv {
         this.random = random;
         this.actionSpace = buildActionSpace();
         this.observationManager = this.manager.newSubManager();
-        this.visualizer = new GomokuVisualizer(GRID_LENGTH);
         reset();
     }
 
@@ -123,11 +122,16 @@ public class GomokuEnv extends BaseBoardGameEnv {
             setCurPlayerId(newPlayerId);
         }
         this.done = done;
+        render();
         return new GomokuStep(manager.newSubManager(), this.actionSpace, preState, buildObservation(), action, reward, done);
     }
 
     @Override
     public void render() {
+        if (boardPane != null) {
+            boardPane.requestLayout();
+            return;
+        }
         if (!isVerbose()) {
             return;
         }
@@ -308,6 +312,18 @@ public class GomokuEnv extends BaseBoardGameEnv {
     private boolean squareIsCurPlayer(int square) {
         Token token = this.chessInfo.get(square);
         return token != null && token.playerId == getCurPlayerId();
+    }
+
+    public int getGridLength() {
+        return GRID_LENGTH;
+    }
+
+    public Map<Integer, Token> getChessInfo() {
+        return chessInfo;
+    }
+
+    public void setBoardPane(GomokuBoardPane boardPane) {
+        this.boardPane = boardPane;
     }
 
     /**

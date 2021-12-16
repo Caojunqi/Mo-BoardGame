@@ -22,7 +22,7 @@ import java.util.*;
  * @author Caojunqi
  * @date 2021-12-07 15:43
  */
-public class FightRobotEnv {
+public class FightRobotEnv<GAME extends BaseBoardGameEnv> {
 
     /**
      * NDArray主管理器
@@ -35,7 +35,7 @@ public class FightRobotEnv {
     /**
      * 游戏环境
      */
-    private BaseBoardGameEnv gameEnv;
+    private GAME gameEnv;
     /**
      * 玩家索引
      */
@@ -44,18 +44,69 @@ public class FightRobotEnv {
      * 对手智能体，索引为{@link this#playerId}的项为null
      */
     private RlAgent[] agents;
+    /**
+     * 对战是否开始
+     */
+    private boolean start;
 
-    public FightRobotEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv) {
+    public FightRobotEnv(NDManager manager, Random random, GAME gameEnv) {
         this(manager, random, gameEnv, random.nextInt(gameEnv.getPlayerNum()));
     }
 
-    public FightRobotEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv, int playerId) {
+    public FightRobotEnv(NDManager manager, Random random, GAME gameEnv, int playerId) {
         this.manager = manager;
         this.random = random;
         this.gameEnv = gameEnv;
         this.playerId = playerId;
 
         setupOpponents();
+    }
+
+    /**
+     * 战斗开始
+     */
+    public void start() {
+        if (this.start) {
+            // 对战已经开始
+            return;
+        }
+        gameEnv.reset();
+        this.start = true;
+        int curPlayerId = this.gameEnv.getCurPlayerId();
+        while (curPlayerId != this.playerId) {
+            // 机器人行动
+            RlAgent robot = this.agents[curPlayerId];
+            NDList robotAction = robot.chooseAction(this.gameEnv, false);
+            this.gameEnv.step(robotAction, false);
+            curPlayerId = this.gameEnv.getCurPlayerId();
+        }
+    }
+
+    /**
+     * 玩家行动
+     */
+    public void playerAction(NDList action) {
+        if (!this.start) {
+            // 对战尚未开始
+            return;
+        }
+        int curPlayerId = this.gameEnv.getCurPlayerId();
+        if (curPlayerId != this.playerId) {
+            // 尚未到玩家行动
+            return;
+        }
+        RlEnv.Step step = this.gameEnv.step(action, false);
+        curPlayerId = this.gameEnv.getCurPlayerId();
+        while (curPlayerId != this.playerId) {
+            // 机器人行动
+            RlAgent robot = this.agents[curPlayerId];
+            NDList robotAction = robot.chooseAction(this.gameEnv, false);
+            step = this.gameEnv.step(robotAction, false);
+            curPlayerId = this.gameEnv.getCurPlayerId();
+        }
+        if (step.isDone()) {
+            this.start = false;
+        }
     }
 
     public void run() {
@@ -125,6 +176,10 @@ public class FightRobotEnv {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public GAME getGameEnv() {
+        return this.gameEnv;
     }
 
 }
