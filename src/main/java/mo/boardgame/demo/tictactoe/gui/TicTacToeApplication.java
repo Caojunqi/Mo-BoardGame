@@ -8,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import mo.boardgame.demo.tictactoe.TicTacToeEnv;
 import mo.boardgame.game.FightRobotEnv;
@@ -51,9 +52,13 @@ public class TicTacToeApplication extends Application {
         tictactoePane.setCenter(boardPane);
         fightRobotEnv.getGameEnv().setBoardPane(boardPane);
 
-        Button start = new Button("Start");
-        start.setOnAction(value -> fightRobotEnv.start());
-        tictactoePane.setLeft(start);
+        Button button = new Button("Game Start");
+        Font font = Font.font("Consolas", FontWeight.BOLD, 13);
+        button.setFont(font);
+        button.setPrefWidth(100);
+        button.setPrefHeight(100);
+        button.setOnAction(value -> fightRobotEnv.start());
+        tictactoePane.setLeft(button);
         return tictactoePane;
     }
 }

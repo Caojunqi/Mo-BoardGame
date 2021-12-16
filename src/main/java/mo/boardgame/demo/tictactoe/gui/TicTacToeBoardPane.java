@@ -83,7 +83,7 @@ public class TicTacToeBoardPane extends Pane {
         this.paddingX = remainingSpaceX / 2;
         this.paddingY = remainingSpaceY / 2;
 
-        drawGrid(gc, paddingX, paddingY, GRID_LENGTH - 1, GRID_LENGTH - 1, cellSize);
+        drawGrid(gc, paddingX, paddingY, GRID_LENGTH, GRID_LENGTH, cellSize);
 
         // 绘制棋盘落子信息
         List<TicTacToeEnv.Token> chessInfo = this.fightRobotEnv.getGameEnv().getBoard();
@@ -138,8 +138,8 @@ public class TicTacToeBoardPane extends Pane {
      * @param token    chess token
      */
     private void drawChess(GraphicsContext gc, double startX, double startY, double cellSize, int row, int col, TicTacToeEnv.Token token) {
-        double x = startX + col * cellSize;
-        double y = startY + row * cellSize;
+        double x = startX + col * cellSize + 0.5 * cellSize;
+        double y = startY + row * cellSize + 0.5 * cellSize;
         double offset = (cellSize * 0.7) / 2;
         gc.save();
         switch (token.getPlayerId()) {
@@ -165,7 +165,7 @@ public class TicTacToeBoardPane extends Pane {
      * @return
      */
     private int getClosestRow(double mouseY) {
-        int closest = (int) Math.round((mouseY - paddingY) / cellSize);
+        int closest = (int) ((mouseY - paddingY) / cellSize);
         if (closest < 0) return 0;
         if (closest > GRID_LENGTH - 1) return GRID_LENGTH - 1;
         return closest;
@@ -179,7 +179,7 @@ public class TicTacToeBoardPane extends Pane {
      * @return
      */
     private int getClosestCol(double mouseX) {
-        int closest = (int) Math.round((mouseX - paddingX) / cellSize);
+        int closest = (int) ((mouseX - paddingX) / cellSize);
         if (closest < 0) return 0;
         if (closest > GRID_LENGTH - 1) return GRID_LENGTH - 1;
         return closest;
