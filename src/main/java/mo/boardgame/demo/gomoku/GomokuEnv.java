@@ -117,10 +117,8 @@ public class GomokuEnv extends BaseBoardGameEnv {
             reward = new float[]{-result.first, -result.first};
             reward[getCurPlayerId()] = result.first;
         }
-        if (!done) {
-            int newPlayerId = (getCurPlayerId() + 1) % N_PLAYERS;
-            setCurPlayerId(newPlayerId);
-        }
+        int newPlayerId = (getCurPlayerId() + 1) % N_PLAYERS;
+        setCurPlayerId(newPlayerId);
         this.done = done;
         render();
         return new GomokuStep(manager.newSubManager(), this.actionSpace, preState, buildObservation(), action, reward, done);
