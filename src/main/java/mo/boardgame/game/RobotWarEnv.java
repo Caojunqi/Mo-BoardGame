@@ -11,11 +11,13 @@ import ai.djl.training.TrainingConfig;
 import ai.djl.training.loss.Loss;
 import algorithm.ppo2.PPO;
 import mo.boardgame.common.ConstantParameter;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 机器人混战：用于测试不同版本的机器人之间的性能
@@ -24,6 +26,11 @@ import java.util.Random;
  * @date 2021-12-08 22:04
  */
 public class RobotWarEnv {
+    /**
+     * 用于从模型文件名称中获取到epoch信息的正则表达式
+     */
+    private static final Pattern EPOCH_PATTERN = Pattern.compile(Pattern.quote(ConstantParameter.BEST_MODEL_PREFIX) + "-(\\d{4})");
+
     /**
      * 总战斗次数
      */
@@ -44,19 +51,48 @@ public class RobotWarEnv {
      * 机器人智能体
      */
     private RlAgent[] agents;
-    private String[] modelEpochs;
 
-    public RobotWarEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv, String[] modelEpochs) {
+    public RobotWarEnv(NDManager manager, Random random, BaseBoardGameEnv gameEnv) {
         this.manager = manager;
         this.random = random;
         this.gameEnv = gameEnv;
         this.agents = new RlAgent[this.gameEnv.getPlayerNum()];
-        this.modelEpochs = modelEpochs;
-
-        buildAgents();
     }
 
     public void run() {
+        File modelDir = new File(ConstantParameter.MODEL_DIR + gameEnv.getName() + ConstantParameter.DIR_SEPARATOR);
+        Collection<File> modelFiles = FileUtils.listFiles(modelDir, null, true);
+        if (modelFiles.isEmpty() || modelFiles.size() < 2) {
+            return;
+        }
+        List<File> sortedFiles = new ArrayList<>(modelFiles);
+        sortedFiles.sort(Comparator.comparing(File::getName));
+        File bestModelFile = sortedFiles.get(sortedFiles.size() - 1);
+        String bestModelName = FilenameUtils.removeExtension(bestModelFile.getName());
+        Matcher bestM = EPOCH_PATTERN.matcher(bestModelName);
+        if (!bestM.matches()) {
+            throw new IllegalStateException("训练出来的模型名称不规范，不能获取到epoch！！ 模型名称：" + bestModelName);
+        }
+        String bestModelEpoch = bestM.group(1);
+        for (int i = 0; i < sortedFiles.size() - 1; i++) {
+            File modelFile = sortedFiles.get(i);
+            String modelName = FilenameUtils.removeExtension(modelFile.getName());
+            Matcher m = EPOCH_PATTERN.matcher(modelName);
+            if (!m.matches()) {
+                throw new IllegalStateException("训练出来的模型名称不规范，不能获取到epoch！！ 模型名称：" + bestModelName);
+            }
+            String modelEpoch = m.group(1);
+
+            String[] modelEpochs = new String[]{bestModelEpoch, modelEpoch};
+            runOnePairEpochs(modelEpochs);
+        }
+    }
+
+    /**
+     * 测试一对模型
+     */
+    public void runOnePairEpochs(String[] modelEpochs) {
+        buildAgents(modelEpochs);
         float[] warResult = new float[this.gameEnv.getPlayerNum()];
         for (int i = 0; i < WAR_TIMES; i++) {
             float[] result = onceWar();
@@ -64,7 +100,7 @@ public class RobotWarEnv {
                 warResult[j] += result[j];
             }
         }
-        System.out.println("战斗结束，比分：" + output(warResult));
+        System.out.println("战斗结束，比分：" + output(modelEpochs, warResult));
     }
 
     private float[] onceWar() {
@@ -85,12 +121,12 @@ public class RobotWarEnv {
     /**
      * 构建机器人智能体
      */
-    private void buildAgents() {
-        if (this.modelEpochs == null || this.modelEpochs.length != this.gameEnv.getPlayerNum()) {
+    private void buildAgents(String[] modelEpochs) {
+        if (modelEpochs == null || modelEpochs.length != this.gameEnv.getPlayerNum()) {
             throw new IllegalArgumentException("智能体模型数量不对，需要[" + this.gameEnv.getPlayerNum() + "]个模型！！");
         }
 
-        for (int i = 0; i < this.modelEpochs.length; i++) {
+        for (int i = 0; i < modelEpochs.length; i++) {
             String fullName = ConstantParameter.MODEL_DIR +
                     this.gameEnv.getName() +
                     ConstantParameter.DIR_SEPARATOR;
@@ -98,7 +134,7 @@ public class RobotWarEnv {
             Model model = gameEnv.buildBaseModel();
             try {
                 Map<String, String> options = new HashMap<>(1);
-                options.put("epoch", this.modelEpochs[i]);
+                options.put("epoch", modelEpochs[i]);
                 model.load(file.toPath(), ConstantParameter.BEST_MODEL_PREFIX, options);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -113,10 +149,10 @@ public class RobotWarEnv {
         }
     }
 
-    private String output(float[] warResult) {
+    private String output(String[] modelEpochs, float[] warResult) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < warResult.length; i++) {
-            stringBuilder.append(this.modelEpochs[i]);
+            stringBuilder.append(modelEpochs[i]);
             stringBuilder.append("[");
             stringBuilder.append(warResult[i]);
             stringBuilder.append("]");
