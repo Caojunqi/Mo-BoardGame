@@ -8,6 +8,7 @@ import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import common.Tuple;
+import mo.boardgame.demo.tictactoe.gui.TicTacToeBoardPane;
 import mo.boardgame.game.BaseBoardGameEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -61,6 +62,7 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      * 用于构建环境状态的管理器，可避免内存泄漏
      */
     private NDManager observationManager;
+    private TicTacToeBoardPane boardPane;
 
     public TicTacToeEnv(NDManager manager, Random random, boolean verbose) {
         super(manager, random, GAME_NAME, N_PLAYERS, verbose);
@@ -115,16 +117,19 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
             reward = new float[]{-result.first, -result.first};
             reward[getCurPlayerId()] = result.first;
         }
-        if (!done) {
-            int newPlayerId = (getCurPlayerId() + 1) % N_PLAYERS;
-            setCurPlayerId(newPlayerId);
-        }
+        int newPlayerId = (getCurPlayerId() + 1) % N_PLAYERS;
+        setCurPlayerId(newPlayerId);
         this.done = done;
+        render();
         return new TicTacToeStep(manager.newSubManager(), this.actionSpace, preState, buildObservation(), action, reward, done);
     }
 
     @Override
     public void render() {
+        if (boardPane != null) {
+            boardPane.requestLayout();
+            return;
+        }
         if (!isVerbose()) {
             return;
         }
@@ -252,6 +257,14 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
      */
     private boolean squareIsCurPlayer(int square) {
         return this.board.get(square).playerId == getCurPlayerId();
+    }
+
+    public List<Token> getBoard() {
+        return board;
+    }
+
+    public void setBoardPane(TicTacToeBoardPane boardPane) {
+        this.boardPane = boardPane;
     }
 
     /**
