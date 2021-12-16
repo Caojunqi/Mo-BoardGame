@@ -1,23 +1,17 @@
 package mo.boardgame.demo.tictactoe;
 
-import ai.djl.ndarray.NDManager;
-import mo.boardgame.game.FightRobotEnv;
-
-import java.util.Random;
+import javafx.application.Application;
+import mo.boardgame.demo.tictactoe.gui.TicTacToeApplication;
 
 /**
- * 井字棋测试类
+ * 井字棋启动类
  *
  * @author Caojunqi
- * @date 2021-12-07 15:36
+ * @date 2021-12-16 15:49
  */
 public class TicTacToeTester {
 
     public static void main(String[] args) {
-        Random random = new Random(0);
-        NDManager mainManager = NDManager.newBaseManager();
-        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, true);
-        FightRobotEnv fightRobotEnv = new FightRobotEnv(mainManager.newSubManager(), random, gameEnv);
-        fightRobotEnv.run();
+        Application.launch(TicTacToeApplication.class, args);
     }
 }

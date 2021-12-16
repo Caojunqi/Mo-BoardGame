@@ -109,34 +109,6 @@ public class FightRobotEnv<GAME extends BaseBoardGameEnv> {
         }
     }
 
-    public void run() {
-        gameEnv.reset();
-        boolean done = false;
-        while (!done) {
-            NDList action;
-            int curPlayerId = this.gameEnv.getCurPlayerId();
-            if (curPlayerId != this.playerId) {
-                // 机器人行动
-                RlAgent robot = this.agents[curPlayerId];
-                action = robot.chooseAction(this.gameEnv, false);
-            } else {
-                // 玩家行动
-                System.out.println("Enter your action: ");
-                Scanner scanner = new Scanner(System.in);
-                String actionStr = scanner.nextLine();
-                action = this.gameEnv.parsePlayerAction(actionStr);
-                if (action == null) {
-                    // 输入错误
-                    continue;
-                }
-            }
-
-            RlEnv.Step step = this.gameEnv.step(action, false);
-            done = step.isDone();
-            gameEnv.render();
-        }
-    }
-
     /**
      * 构建对手
      */

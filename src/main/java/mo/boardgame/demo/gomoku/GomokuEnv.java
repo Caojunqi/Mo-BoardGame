@@ -128,26 +128,6 @@ public class GomokuEnv extends BaseBoardGameEnv {
     public void render() {
         if (boardPane != null) {
             boardPane.requestLayout();
-            return;
-        }
-        if (!isVerbose()) {
-            return;
-        }
-        logger.info("");
-        if (this.done) {
-            logger.info("GAME OVER");
-        } else {
-            logger.info("It is Player " + this.getCurPlayerId() + "'s turn to move");
-        }
-        for (int i = 0; i < NUM_SQUARES; i++) {
-            Token token = this.chessInfo.get(i);
-            if (token == null) {
-                token = Token.NONE;
-            }
-            System.out.print(token.symbol + " ");
-            if ((i + 1) % GRID_LENGTH == 0) {
-                System.out.print("\n");
-            }
         }
     }
 

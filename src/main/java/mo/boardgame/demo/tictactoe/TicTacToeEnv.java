@@ -128,23 +128,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     public void render() {
         if (boardPane != null) {
             boardPane.requestLayout();
-            return;
-        }
-        if (!isVerbose()) {
-            return;
-        }
-        logger.info("");
-        if (this.done) {
-            logger.info("GAME OVER");
-        } else {
-            logger.info("It is Player " + this.getCurPlayerId() + "'s turn to move");
-        }
-        for (int i = 0; i < this.board.size(); i++) {
-            Token token = this.board.get(i);
-            System.out.print(token.symbol + " ");
-            if ((i + 1) % GRID_LENGTH == 0) {
-                System.out.print("\n");
-            }
         }
     }
 
