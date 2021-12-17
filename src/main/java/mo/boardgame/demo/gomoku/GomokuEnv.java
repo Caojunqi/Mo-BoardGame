@@ -204,7 +204,7 @@ public class GomokuEnv extends BaseBoardGameEnv {
      */
     public Tuple<Integer, Boolean> checkGameOver() {
         int curPlayerId = getCurPlayerId();
-        if (this.turns < N_IN_ROW * 2) {
+        if (this.turns < N_IN_ROW * 2 - 1) {
             // 行动步数太少，不可能有人获胜
             return new Tuple<>(0, false);
         }
