@@ -96,6 +96,10 @@ public class FightRobotEnv<GAME extends BaseBoardGameEnv> {
             return;
         }
         RlEnv.Step step = this.gameEnv.step(action, false);
+        if (step.isDone()) {
+            this.start = false;
+            return;
+        }
         curPlayerId = this.gameEnv.getCurPlayerId();
         while (curPlayerId != this.playerId) {
             // 机器人行动
