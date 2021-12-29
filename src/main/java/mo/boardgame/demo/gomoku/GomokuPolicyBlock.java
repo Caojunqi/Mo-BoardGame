@@ -78,7 +78,8 @@ public class GomokuPolicyBlock extends AbstractBlock {
         if (training) {
             actions = ActionSampler.sampleMultinomial(netManager, actionProb, random);
         } else {
-            actions = actionProb.argMax();
+            actions = actionProb.argMax().toType(DataType.INT32, false);
+            actions.attach(netManager);
         }
         NDArray entropy = maskPolicy.mul(actionProb).sum(new int[]{-1}).neg();
         return new NDList(actions, vf.singletonOrThrow(), maskPolicy, entropy);
