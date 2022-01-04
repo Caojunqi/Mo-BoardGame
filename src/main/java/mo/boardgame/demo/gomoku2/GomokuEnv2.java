@@ -32,7 +32,7 @@ public class GomokuEnv2 extends BaseBoardGameEnv {
     /**
      * 游戏名称
      */
-    private static final String GAME_NAME = "gomoku";
+    private static final String GAME_NAME = "gomoku2";
     /**
      * 棋盘长宽
      */
