@@ -58,7 +58,7 @@ public class ModelTrainingListener extends TrainingListenerAdapter {
             totalEvalRewards += reward;
         }
         float meanEvalReward = totalEvalRewards / evalEpisodes;
-        if (meanEvalReward <= this.threshold) {
+        if (meanEvalReward < this.threshold) {
             return;
         }
         try {

@@ -19,7 +19,7 @@ public class TrainStart {
     public static void main(String[] args) {
         int epoch = 500;
         int replayBufferSize = 2048;
-        BoardGameType gameType = BoardGameType.GOMOKU;
+        BoardGameType gameType = BoardGameType.GOMOKU2;
 
         Engine.getInstance().setRandomSeed(0);
         Random random = new Random(0);

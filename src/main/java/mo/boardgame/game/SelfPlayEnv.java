@@ -246,7 +246,7 @@ public class SelfPlayEnv implements RlEnv {
     private DefaultTrainingConfig buildDynamicTrainingConfig() {
         //TODO 参数统一存放
         return new DefaultTrainingConfig(Loss.l2Loss())
-                .addTrainingListeners(new ModelTrainingListener(this, 10, 50, 0.6f))
+                .addTrainingListeners(new ModelTrainingListener(this, 10, 50, 1.0f))
                 .optOptimizer(
                         Adam.builder().optLearningRateTracker(Tracker.fixed(CommonParameter.LEARNING_RATE)).build());
     }

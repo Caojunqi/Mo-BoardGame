@@ -4,6 +4,8 @@ import ai.djl.ndarray.NDManager;
 import javafx.application.Application;
 import mo.boardgame.demo.gomoku.GomokuEnv;
 import mo.boardgame.demo.gomoku.gui.GomokuApplication;
+import mo.boardgame.demo.gomoku2.GomokuEnv2;
+import mo.boardgame.demo.gomoku2.gui.GomokuApplication2;
 import mo.boardgame.demo.tictactoe.TicTacToeEnv;
 import mo.boardgame.demo.tictactoe.gui.TicTacToeApplication;
 import mo.boardgame.game.BaseBoardGameEnv;
@@ -27,6 +29,10 @@ public enum BoardGameType {
      * 井字棋
      */
     TIC_TAC_TOE(TicTacToeEnv.class, TicTacToeApplication.class),
+    /**
+     * 五子棋2
+     */
+    GOMOKU2(GomokuEnv2.class, GomokuApplication2.class),
     ;
 
     /**

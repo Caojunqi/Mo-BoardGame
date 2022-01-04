@@ -15,7 +15,7 @@ import java.util.Random;
 public class RobotWarStart {
 
     public static void main(String[] args) {
-        BoardGameType gameType = BoardGameType.GOMOKU;
+        BoardGameType gameType = BoardGameType.GOMOKU2;
 
         NDManager mainManager = NDManager.newBaseManager();
         Random random = new Random(0);
