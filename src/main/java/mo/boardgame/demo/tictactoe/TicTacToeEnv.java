@@ -10,7 +10,6 @@ import ai.djl.ndarray.types.Shape;
 import common.Tuple;
 import mo.boardgame.demo.tictactoe.gui.TicTacToeBoardPane;
 import mo.boardgame.game.BaseBoardGameEnv;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,25 +141,6 @@ public class TicTacToeEnv extends BaseBoardGameEnv {
     @Override
     public Shape getObservationShape() {
         return new Shape(1, 1, 3, 3);
-    }
-
-    @Override
-    public NDList parsePlayerAction(String actionStr) {
-        if (StringUtils.isEmpty(actionStr)) {
-            System.out.println("玩家行为不得为空！正确格式为：x");
-            return null;
-        }
-        String[] strs = actionStr.split(" ");
-        if (strs.length > 1) {
-            System.out.println("玩家行为输入格式不正确！正确格式为：x");
-            return null;
-        }
-        int actionData = Integer.parseInt(strs[0]);
-        if (actionData >= NUM_SQUARES) {
-            System.out.println("玩家行为输入格式不正确！格子数不得超过" + NUM_SQUARES);
-            return null;
-        }
-        return new NDList(manager.create(actionData));
     }
 
     /**

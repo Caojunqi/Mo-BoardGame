@@ -64,11 +64,6 @@ public abstract class BaseBoardGameEnv implements RlEnv, IEnvRender {
 
     public abstract Shape getObservationShape();
 
-    /**
-     * 解析玩家行为输入
-     */
-    public abstract NDList parsePlayerAction(String actionStr);
-
     @Override
     public Step[] getBatch() {
         throw new IllegalStateException("BoardGameEnv does not provide any sample batch!!");
