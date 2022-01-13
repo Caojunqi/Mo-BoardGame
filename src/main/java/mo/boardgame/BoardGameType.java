@@ -21,55 +21,55 @@ import java.util.Random;
  */
 public enum BoardGameType {
 
-    /**
-     * 五子棋
-     */
-    GOMOKU(GomokuEnv.class, GomokuApplication.class),
-    /**
-     * 井字棋
-     */
-    TIC_TAC_TOE(TicTacToeEnv.class, TicTacToeApplication.class),
-    /**
-     * 五子棋2
-     */
-    GOMOKU2(GomokuEnv2.class, GomokuApplication2.class),
-    ;
+	/**
+	 * 五子棋
+	 */
+	GOMOKU(GomokuEnv.class, GomokuApplication.class),
+	/**
+	 * 井字棋
+	 */
+	TIC_TAC_TOE(TicTacToeEnv.class, TicTacToeApplication.class),
+	/**
+	 * 五子棋2
+	 */
+	GOMOKU2(GomokuEnv2.class, GomokuApplication2.class),
+	;
 
-    /**
-     * 游戏环境构建类
-     */
-    private Class<? extends BaseBoardGameEnv> gameEnvClz;
-    /**
-     * 游戏环境渲染类
-     */
-    private Class<? extends Application> renderApplicationClz;
+	/**
+	 * 游戏环境构建类
+	 */
+	private Class<? extends BaseBoardGameEnv> gameEnvClz;
+	/**
+	 * 游戏环境渲染类
+	 */
+	private Class<? extends Application> renderApplicationClz;
 
-    BoardGameType(Class<? extends BaseBoardGameEnv> gameEnvClz, Class<? extends Application> renderApplicationClz) {
-        this.gameEnvClz = gameEnvClz;
-        this.renderApplicationClz = renderApplicationClz;
-    }
+	BoardGameType(Class<? extends BaseBoardGameEnv> gameEnvClz, Class<? extends Application> renderApplicationClz) {
+		this.gameEnvClz = gameEnvClz;
+		this.renderApplicationClz = renderApplicationClz;
+	}
 
-    /**
-     * 构建棋类游戏环境
-     *
-     * @param manager 矩阵资源管理类
-     * @param random  随机数生成器
-     * @param verbose 是否渲染游戏环境状态
-     * @return 棋类游戏环境
-     */
-    public BaseBoardGameEnv buildBoardGameEnv(NDManager manager, Random random, boolean verbose) {
-        try {
-            Constructor<? extends BaseBoardGameEnv> gameEnvConstructor = this.gameEnvClz.getConstructor(NDManager.class, Random.class, boolean.class);
-            return gameEnvConstructor.newInstance(manager, random, verbose);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+	/**
+	 * 构建棋类游戏环境
+	 *
+	 * @param manager 矩阵资源管理类
+	 * @param random  随机数生成器
+	 * @param verbose 是否渲染游戏环境状态
+	 * @return 棋类游戏环境
+	 */
+	public BaseBoardGameEnv buildBoardGameEnv(NDManager manager, Random random, boolean verbose) {
+		try {
+			Constructor<? extends BaseBoardGameEnv> gameEnvConstructor = this.gameEnvClz.getConstructor(NDManager.class, Random.class, boolean.class);
+			return gameEnvConstructor.newInstance(manager, random, verbose);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    /**
-     * 启动棋类游戏界面，测试AI性能时使用
-     */
-    public void launchRenderApplication(String[] args) {
-        Application.launch(this.renderApplicationClz, args);
-    }
+	/**
+	 * 启动棋类游戏界面，测试AI性能时使用
+	 */
+	public void launchRenderApplication(String[] args) {
+		Application.launch(this.renderApplicationClz, args);
+	}
 }

@@ -8,9 +8,9 @@ package mo.boardgame;
  */
 public class TestStart {
 
-    public static void main(String[] args) {
-        BoardGameType gameType = BoardGameType.GOMOKU2;
+	public static void main(String[] args) {
+		BoardGameType gameType = BoardGameType.GOMOKU2;
 
-        gameType.launchRenderApplication(args);
-    }
+		gameType.launchRenderApplication(args);
+	}
 }

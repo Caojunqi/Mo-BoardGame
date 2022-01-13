@@ -23,43 +23,43 @@ import java.util.Random;
  */
 public class GomokuApplication2 extends Application {
 
-    private final static String GOMOKU_GUI_RESOURCE_DIR = "demo/gomoku/";
+	private final static String GOMOKU_GUI_RESOURCE_DIR = "demo/gomoku/";
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Font.loadFont(getClass().getClassLoader().getResource
-                (GOMOKU_GUI_RESOURCE_DIR + "FontAwesome.otf").toExternalForm(), 10);
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		Font.loadFont(getClass().getClassLoader().getResource
+				(GOMOKU_GUI_RESOURCE_DIR + "FontAwesome.otf").toExternalForm(), 10);
 
-        Random random = new Random(0);
-        NDManager mainManager = NDManager.newBaseManager();
-        GomokuEnv2 gameEnv = new GomokuEnv2(mainManager.newSubManager(), random, true);
-        FightRobotEnv<GomokuEnv2> fightRobotEnv = new FightRobotEnv<>(mainManager.newSubManager(), random, gameEnv);
+		Random random = new Random(0);
+		NDManager mainManager = NDManager.newBaseManager();
+		GomokuEnv2 gameEnv = new GomokuEnv2(mainManager.newSubManager(), random, true);
+		FightRobotEnv<GomokuEnv2> fightRobotEnv = new FightRobotEnv<>(mainManager.newSubManager(), random, gameEnv);
 
-        Pane gomokuPane = loadGomokuPane(mainManager, fightRobotEnv);
+		Pane gomokuPane = loadGomokuPane(mainManager, fightRobotEnv);
 
-        primaryStage.setTitle("Gomoku");
-        primaryStage.setScene(new Scene(gomokuPane, 800, 600));
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
-        primaryStage.getIcons().add(new Image(getClass().getClassLoader()
-                .getResource(GOMOKU_GUI_RESOURCE_DIR + "AppIcon.png").toExternalForm()));
-        primaryStage.show();
-    }
+		primaryStage.setTitle("Gomoku");
+		primaryStage.setScene(new Scene(gomokuPane, 800, 600));
+		primaryStage.setMinWidth(800);
+		primaryStage.setMinHeight(600);
+		primaryStage.getIcons().add(new Image(getClass().getClassLoader()
+				.getResource(GOMOKU_GUI_RESOURCE_DIR + "AppIcon.png").toExternalForm()));
+		primaryStage.show();
+	}
 
-    private Pane loadGomokuPane(NDManager mainManager, FightRobotEnv<GomokuEnv2> fightRobotEnv) {
-        BorderPane gomokuPane = new BorderPane();
-        GomokuBoardPane2 boardPane = new GomokuBoardPane2(mainManager.newSubManager(), fightRobotEnv);
-        gomokuPane.setCenter(boardPane);
-        fightRobotEnv.getGameEnv().setBoardPane(boardPane);
+	private Pane loadGomokuPane(NDManager mainManager, FightRobotEnv<GomokuEnv2> fightRobotEnv) {
+		BorderPane gomokuPane = new BorderPane();
+		GomokuBoardPane2 boardPane = new GomokuBoardPane2(mainManager.newSubManager(), fightRobotEnv);
+		gomokuPane.setCenter(boardPane);
+		fightRobotEnv.getGameEnv().setBoardPane(boardPane);
 
-        Button button = new Button("Start");
-        Font font = Font.font("Consolas", FontWeight.BOLD, 13);
-        button.setFont(font);
-        button.setPrefWidth(100);
-        button.setPrefHeight(100);
-        button.setOnAction(value -> fightRobotEnv.start());
-        gomokuPane.setLeft(button);
-        return gomokuPane;
-    }
+		Button button = new Button("Start");
+		Font font = Font.font("Consolas", FontWeight.BOLD, 13);
+		button.setFont(font);
+		button.setPrefWidth(100);
+		button.setPrefHeight(100);
+		button.setOnAction(value -> fightRobotEnv.start());
+		gomokuPane.setLeft(button);
+		return gomokuPane;
+	}
 
 }

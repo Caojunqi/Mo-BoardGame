@@ -8,19 +8,19 @@ package mo.boardgame.common;
  */
 public final class ConstantParameter {
 
-    public static final String MODEL_DIR = "src/main/resources/model/";
+	public static final String MODEL_DIR = "src/main/resources/model/";
 
-    public static final String BASE_MODEL_NAME = "base";
+	public static final String BASE_MODEL_NAME = "base";
 
-    public static final String BEST_MODEL_PREFIX = "best";
+	public static final String BEST_MODEL_PREFIX = "best";
 
-    public static final String MODEL_SUFFIX = "model";
+	public static final String MODEL_SUFFIX = "model";
 
-    /**
-     * 文件夹分隔符
-     */
-    public final static String DIR_SEPARATOR = "/";
+	/**
+	 * 文件夹分隔符
+	 */
+	public final static String DIR_SEPARATOR = "/";
 
-    public final static String MODEL_FILE_EXTENSION_SPLIT = ".";
+	public final static String MODEL_FILE_EXTENSION_SPLIT = ".";
 
 }

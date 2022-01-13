@@ -23,42 +23,42 @@ import java.util.Random;
  */
 public class TicTacToeApplication extends Application {
 
-    private final static String TICTACTOE_GUI_RESOURCE_DIR = "demo/tictactoe/";
+	private final static String TICTACTOE_GUI_RESOURCE_DIR = "demo/tictactoe/";
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Font.loadFont(getClass().getClassLoader().getResource
-                (TICTACTOE_GUI_RESOURCE_DIR + "FontAwesome.otf").toExternalForm(), 10);
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		Font.loadFont(getClass().getClassLoader().getResource
+				(TICTACTOE_GUI_RESOURCE_DIR + "FontAwesome.otf").toExternalForm(), 10);
 
-        Random random = new Random(0);
-        NDManager mainManager = NDManager.newBaseManager();
-        TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, true);
-        FightRobotEnv<TicTacToeEnv> fightRobotEnv = new FightRobotEnv<>(mainManager.newSubManager(), random, gameEnv);
+		Random random = new Random(0);
+		NDManager mainManager = NDManager.newBaseManager();
+		TicTacToeEnv gameEnv = new TicTacToeEnv(mainManager.newSubManager(), random, true);
+		FightRobotEnv<TicTacToeEnv> fightRobotEnv = new FightRobotEnv<>(mainManager.newSubManager(), random, gameEnv);
 
-        Pane tictactoePane = loadTictactoePane(mainManager, fightRobotEnv);
+		Pane tictactoePane = loadTictactoePane(mainManager, fightRobotEnv);
 
-        primaryStage.setTitle("TicTacToe");
-        primaryStage.setScene(new Scene(tictactoePane, 800, 600));
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
-        primaryStage.getIcons().add(new Image(getClass().getClassLoader()
-                .getResource(TICTACTOE_GUI_RESOURCE_DIR + "AppIcon.png").toExternalForm()));
-        primaryStage.show();
-    }
+		primaryStage.setTitle("TicTacToe");
+		primaryStage.setScene(new Scene(tictactoePane, 800, 600));
+		primaryStage.setMinWidth(800);
+		primaryStage.setMinHeight(600);
+		primaryStage.getIcons().add(new Image(getClass().getClassLoader()
+				.getResource(TICTACTOE_GUI_RESOURCE_DIR + "AppIcon.png").toExternalForm()));
+		primaryStage.show();
+	}
 
-    private Pane loadTictactoePane(NDManager mainManager, FightRobotEnv<TicTacToeEnv> fightRobotEnv) {
-        BorderPane tictactoePane = new BorderPane();
-        TicTacToeBoardPane boardPane = new TicTacToeBoardPane(mainManager.newSubManager(), fightRobotEnv);
-        tictactoePane.setCenter(boardPane);
-        fightRobotEnv.getGameEnv().setBoardPane(boardPane);
+	private Pane loadTictactoePane(NDManager mainManager, FightRobotEnv<TicTacToeEnv> fightRobotEnv) {
+		BorderPane tictactoePane = new BorderPane();
+		TicTacToeBoardPane boardPane = new TicTacToeBoardPane(mainManager.newSubManager(), fightRobotEnv);
+		tictactoePane.setCenter(boardPane);
+		fightRobotEnv.getGameEnv().setBoardPane(boardPane);
 
-        Button button = new Button("Game Start");
-        Font font = Font.font("Consolas", FontWeight.BOLD, 13);
-        button.setFont(font);
-        button.setPrefWidth(100);
-        button.setPrefHeight(100);
-        button.setOnAction(value -> fightRobotEnv.start());
-        tictactoePane.setLeft(button);
-        return tictactoePane;
-    }
+		Button button = new Button("Game Start");
+		Font font = Font.font("Consolas", FontWeight.BOLD, 13);
+		button.setFont(font);
+		button.setPrefWidth(100);
+		button.setPrefHeight(100);
+		button.setOnAction(value -> fightRobotEnv.start());
+		tictactoePane.setLeft(button);
+		return tictactoePane;
+	}
 }

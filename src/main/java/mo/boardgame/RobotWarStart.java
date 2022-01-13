@@ -14,13 +14,13 @@ import java.util.Random;
  */
 public class RobotWarStart {
 
-    public static void main(String[] args) {
-        BoardGameType gameType = BoardGameType.GOMOKU2;
+	public static void main(String[] args) {
+		BoardGameType gameType = BoardGameType.GOMOKU2;
 
-        NDManager mainManager = NDManager.newBaseManager();
-        Random random = new Random(0);
-        BaseBoardGameEnv gameEnv = gameType.buildBoardGameEnv(mainManager.newSubManager(), random, true);
-        RobotWarEnv robotWarEnv = new RobotWarEnv(mainManager.newSubManager(), random, gameEnv);
-        robotWarEnv.run();
-    }
+		NDManager mainManager = NDManager.newBaseManager();
+		Random random = new Random(0);
+		BaseBoardGameEnv gameEnv = gameType.buildBoardGameEnv(mainManager.newSubManager(), random, true);
+		RobotWarEnv robotWarEnv = new RobotWarEnv(mainManager.newSubManager(), random, gameEnv);
+		robotWarEnv.run();
+	}
 }

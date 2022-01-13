@@ -8,8 +8,8 @@ package mo.boardgame.game;
  */
 public interface IEnvRender {
 
-    /**
-     * 绘制环境
-     */
-    void render();
+	/**
+	 * 绘制环境
+	 */
+	void render();
 }
