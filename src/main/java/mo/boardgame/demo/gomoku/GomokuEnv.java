@@ -241,7 +241,7 @@ public class GomokuEnv extends BaseBoardGameEnv {
 			}
 
 			// 右上向左下检测
-			if (w > N_IN_ROW - 1 && h < GRID_LENGTH - N_IN_ROW + 1) {
+			if (w >= N_IN_ROW - 1 && h < GRID_LENGTH - N_IN_ROW + 1) {
 				boolean finish = true;
 				for (int j = i; j < i + N_IN_ROW * (GRID_LENGTH - 1); j += (GRID_LENGTH - 1)) {
 					if (!squareIsCurPlayer(j)) {
